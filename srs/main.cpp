@@ -6,6 +6,8 @@
 #include <thread>
 #include <future>
 #include "code_coverage.h"
+#include "base_grammar.h"
+#include "binary_map_grammar.h"
 
 using namespace std;
 

@@ -8,7 +8,7 @@ using namespace std;
 
 class Base_grammar {
 	public:
-		virtual vector<string> generate_strings() const = 0;
+		virtual vector<string> generate_strings() = 0;
 		virtual float find_fitness() = 0;
 		virtual float get_fitness() const = 0;
 
@@ -18,8 +18,6 @@ class Base_grammar {
 
 		virtual pair<shared_ptr<Base_grammar>, shared_ptr<Base_grammar> > 
 		recombination(const shared_ptr<Base_grammar>& mate) const = 0;
-
-		virtual vector<string> generate_sample_strings() = 0;
 
 		virtual void print(ostream& os) const = 0;
 

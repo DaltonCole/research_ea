@@ -1,8 +1,8 @@
 #include "code_coverage.h"
 
-const string Code_coverage::tmp_directory = "./tmp/";
+const string Code_coverage::tmp_directory = "/tmp/kcov_temp_code_coverage/";
 // Is ".8159829a7e16cfa9" always constant?
-const string Code_coverage::kcov_saved_path = "/mipl_parser.8159829a7e16cfa9/coverage.json";
+const string Code_coverage::kcov_saved_path = "/mipl_parser/coverage.json";
 
 Code_coverage::Code_coverage() {
 	valid_outputs = {};
@@ -46,6 +46,10 @@ float Code_coverage::operator()(const string& input, const int index) const {
 	string kcov_command = "kcov " + tmp_directory + to_string(index) 
 	+ " /home/drc/Desktop/CS5500/HW3/mipl_parser "
 	+ tmp_directory + to_string(index) + ".txt";
+
+	kcov_command  = "kcov " + tmp_directory + to_string(index) 
+	+ " /home/drc/Desktop/Research/ea/tester_parser/mipl_parser "
+	+ tmp_directory + to_string(index) + ".txt";
 	///////////////////////////////////
 
 	// Make tmp file for input
@@ -69,6 +73,7 @@ float Code_coverage::operator()(const string& input, const int index) const {
 				if(line.find("file") == std::string::npos) {
 					// Find json line containing only "percent_covered" field
 					if(line.find("percent_covered") != std::string::npos) {
+						infile.close();
 						return parse_json_line_containing_code_coverage(line);
 					}
 				}
@@ -137,9 +142,9 @@ std::string Code_coverage::exec(const string& cmd) const {
 bool Code_coverage::valid_input(const string& input) const {
 	for(auto invalid : invalid_outputs) {
 		if(input.find(invalid) != std::string::npos) {
-			return true;
+			return false;
 		}
 	}
 
-	return false;
+	return true;
 }

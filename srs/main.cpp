@@ -19,7 +19,7 @@ int main() {
 	// Initalize random
 	srand (time(NULL));
 	//string "kcov  /tmp/thing /home/drc/Desktop/CS5500/HW3/mipl_parser /home/drc/Desktop/CS5500/HW3/inputs/procCalls_noErrors.txt"
-	
+	/*
 	Code_coverage a("echo dalton", vector<string>(), vector<string>({"Line"}));
 
 	vector<string> list({"comboNoErrors.txt", "procCalls_noErrors.txt",
@@ -36,10 +36,28 @@ int main() {
 	}
 
 	//cout << a(inputs) << endl;
+	*/
 
-	shared_ptr<Base_grammar> grammar(new Binary_map_grammar(list)); // inputs.front()
+	vector<string> list({"1", "2", "3", "4"});
 
-	//cout << (*grammar) << endl;
+	vector<string> inputs;
+
+	for(uint i = 0; i < list.size(); i++) {
+		std::ifstream t("/home/drc/Desktop/Research/ea/tester_parser/" + list[i]);
+		string str;
+		if(t.is_open()) {
+			str = string((std::istreambuf_iterator<char>(t)),
+					std::istreambuf_iterator<char>());
+		} else {
+			cout << "Error opening file " << list[i] << endl;
+		}
+
+		inputs.push_back(str);
+	}
+
+	shared_ptr<Base_grammar> grammar(new Binary_map_grammar(inputs)); // inputs.front()
+
+	cout << (*grammar) << endl;
 
 	/*
 	Dfa d("[a-zA-Z0-9_]+"); 
@@ -56,7 +74,7 @@ int main() {
 		grammar -> find_fitness();
 	}*/
 
-	//cout << (grammar -> find_fitness()) << endl;
+	cout << (grammar -> find_fitness()) << endl;
 
 
 	return 0;

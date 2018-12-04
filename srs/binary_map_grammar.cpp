@@ -1,6 +1,6 @@
 #include "binary_map_grammar.h"
 
-const int Binary_map_grammar::words_generated_count = 100;
+const int Binary_map_grammar::words_generated_count = 5;
 unordered_map<char, uint32_t> Binary_map_grammar::char_to_binary_mapping;
 unordered_map<uint32_t, Dfa> Binary_map_grammar::binary_to_regex_mapping;
 uint32_t Binary_map_grammar::next_available_mapping = 1;
@@ -145,17 +145,34 @@ Binary_map_grammar::Binary_map_grammar(const vector<string>& inputs) {
 	}
 }
 
-vector<string> Binary_map_grammar::generate_strings() const {
-	return {""};
+vector<string> Binary_map_grammar::generate_strings() {
+	// List of words
 	vector<string> words;
 
 	while(words.size() < words_generated_count) {
-		// Randomly choose rules until termination
-		// NOTE: need to improve on this idea with research stuff
-
+		words.push_back(generate_string(grammar[start_symbol]));
+		//cout << words.back() << endl;
 	}
 
 	return words;
+}
+
+string Binary_map_grammar::generate_string(const vector<vector<uint32_t> >& rules) {
+	string word = "";
+	int random_rule = rand() % rules.size();
+
+	// Randomly choose rules until termination
+	// NOTE: need to improve on this idea with research stuff
+	for(const auto& non_terminal : rules[random_rule]) {
+		// If terminal character, add it to word
+		if(binary_to_regex_mapping.find(non_terminal) != binary_to_regex_mapping.end()) {
+			word += binary_to_regex_mapping[non_terminal].generate_string();
+		} else { // Non-terminal
+			word += generate_string(grammar[non_terminal]);
+		}
+	}
+
+	return word;
 }
 
 float Binary_map_grammar::find_fitness() {
@@ -187,10 +204,6 @@ void Binary_map_grammar::abstract() {
 pair<shared_ptr<Base_grammar>, shared_ptr<Base_grammar> > 
 Binary_map_grammar::recombination(const shared_ptr<Base_grammar>& mate) const {
 	return make_pair(mate, mate);
-}
-
-vector<string> Binary_map_grammar::generate_sample_strings() {
-	return {""};
 }
 
 void Binary_map_grammar::print(ostream& os) const {

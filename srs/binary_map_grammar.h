@@ -7,6 +7,7 @@
 #include <vector>
 #include <cstdint>
 #include <memory>
+#include <future>
 #include "dfa.h"
 #include "base_grammar.h"
 #include "code_coverage.h"
@@ -19,7 +20,9 @@ class Binary_map_grammar : public Base_grammar {
 		// Multiple example input
 		Binary_map_grammar(const vector<string>& inputs);
 
-		virtual vector<string> generate_strings() const;
+		virtual vector<string> generate_strings();
+		string generate_string(const vector<vector<uint32_t> >& rules);
+
 		virtual float find_fitness();
 		virtual float get_fitness() const;
 
@@ -29,7 +32,9 @@ class Binary_map_grammar : public Base_grammar {
 
 		virtual pair<shared_ptr<Base_grammar>, shared_ptr<Base_grammar> > recombination(const shared_ptr<Base_grammar>& mate) const;
 
-		virtual vector<string> generate_sample_strings();
+
+		
+
 
 		void print(ostream&) const;
 

@@ -1,15 +1,25 @@
-#ifndef BASE_GRAMMAR_H
-#define BASE_GRAMMAR_H
+#ifndef BINARY_MAP_GRAMMAR
+#define BINARY_MAP_GRAMMAR
 
 #include <utility>
 #include <unordered_map>
-#include <regex>
+//#include <regex>
+#include <vector>
+#include <cstdint>
+#include <memory>
+#include "dfa.h"
+#include "base_grammar.h"
+#include "code_coverage.h"
 using namespace std;
 
 class Binary_map_grammar : public Base_grammar {
 	public:
-		Binary_map_grammar();
+		// Single example input
+		Binary_map_grammar(const string& input);
+		// Multiple example input
+		Binary_map_grammar(const vector<string>& inputs);
 
+		virtual vector<string> generate_strings() const;
 		virtual float find_fitness();
 		virtual float get_fitness() const;
 
@@ -21,69 +31,23 @@ class Binary_map_grammar : public Base_grammar {
 
 		virtual vector<string> generate_sample_strings();
 
+		void print(ostream&) const;
+
 	private:
+		unordered_map<uint32_t, vector<vector<uint32_t> > > grammar;
+		float fitness;
+
 		static const int words_generated_count;
-		static unordered_map<> char_to_binary_mapping;
-		static unordered_map<> binary_to_regex mapping;
+		// NOTE: Might pre-compute this so minor binary changes correlate to minor ascii changes
+		static unordered_map<char, uint32_t> char_to_binary_mapping; 
+		static unordered_map<uint32_t, Dfa> binary_to_regex_mapping;
+		static uint32_t next_available_mapping;
 
 		// Common regular expressions
-		static const vector<regex> common_patterns;
+		static const vector<Dfa> common_patterns;
+
+		// Start symbol
+		static const uint32_t start_symbol;
 };
-
-const int Binary_map_grammar::words_generated_count = 100;
-
-const vector<regex> Binary_map_grammar::common_patterns = {
-	// Single characters
-	"[A-Z]", // Any capital letters
-	"[a-z]", // Any lowercase letters
-	"[A-Za-z]", // Any letters
-	"[0-9]", // Any numbers
-	"[0-9A-Za-z]", // Any alpha-numeric
-	// One or more character
-	"[A-Z+]", // capital letters
-	"[a-z+]", // lowercase letters
-	"[A-Za-z+]", // letters
-	"[0-9+]", // numbers
-	"[0-9A-Za-z+]", // alpha-numeric
-	// Any number of characters
-	"[A-Z*]", // capital letters
-	"[a-z*]", // lowercase letters
-	"[A-Za-z*]", // letters
-	"[0-9*]", // numbers
-	"[0-9A-Za-z*]" // alpha-numeric
-
-	// NOTE: Should add hex, _ stuff, binary, base64, char with newline and tab (white space)
-}
-
-
-Binary_map_grammar::Binary_map_grammar() {
-
-}
-
-float Binary_map_grammar::find_fitness() {
-
-}
-
-float Binary_map_grammar::get_fitness() const {
-
-}
-
-void Binary_map_grammar::mutate() {
-
-}
-
-void Binary_map_grammar::abstract() {
-
-}
-
-pair<shared_ptr<Base_grammar>, shared_ptr<Base_grammar> > 
-Binary_map_grammar::recombination(const shared_ptr<Base_grammar>& mate) const {
-
-}
-
-vector<string> Binary_map_grammar::generate_sample_strings() {
-
-		}
-
 
 #endif

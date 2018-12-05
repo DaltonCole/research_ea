@@ -3,6 +3,7 @@
 
 #include <utility>
 #include <unordered_map>
+#include <unordered_set>
 //#include <regex>
 #include <vector>
 #include <cstdint>
@@ -35,7 +36,14 @@ class Binary_map_grammar : public Base_grammar {
 
 		virtual void abstract();
 
-		virtual pair<shared_ptr<Base_grammar>, shared_ptr<Base_grammar> > recombination(shared_ptr<Base_grammar>& mate);
+		// --- Abstract helpers ---
+		void eliminate_dead_rules();
+		void eliminate_dead_rules_helper
+		(const uint32_t non_terminal, unordered_set<uint32_t>& touched_rules);
+		///////////////////////////
+
+		virtual pair<shared_ptr<Base_grammar>, shared_ptr<Base_grammar> > 
+		recombination(shared_ptr<Base_grammar>& mate);
 
 		void print(ostream&) const;
 

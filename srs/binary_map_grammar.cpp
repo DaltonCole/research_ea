@@ -274,7 +274,45 @@ uint32_t Binary_map_grammar::random_term() const {
 // Try to combine rules to make it more CFG-like (instead of regex)
 // Abstract out terminals (ex p = [a-z])
 void Binary_map_grammar::abstract() {
+	eliminate_dead_rules();
+}
 
+void Binary_map_grammar::eliminate_dead_rules() {
+	// Rules that we have looked at
+	unordered_set<uint32_t> touched_rules;
+
+	// Call helper on start symbol
+	touched_rules.insert(start_symbol);
+	eliminate_dead_rules_helper(start_symbol, touched_rules);
+
+	// Keys in grammar
+	vector<uint32_t> keys;
+	for(const auto& non_terminal : grammar) {
+		keys.push_back(non_terminal.first);
+	}
+
+	// Delete rules not in touched_rules
+	for(const auto& non_terminal : keys) {
+		if(touched_rules.find(non_terminal) == touched_rules.end()) {
+			grammar.erase(grammar.find(non_terminal));
+		}
+	}
+}
+
+void Binary_map_grammar::eliminate_dead_rules_helper
+(const uint32_t non_terminal, unordered_set<uint32_t>& touched_rules) {
+	// Explore each rule in non_terminal
+	for(const vector<uint32_t>& rule : grammar[non_terminal]) {
+		// Explore each term in the rule
+		for(const uint32_t& term : rule) {
+			// If term is a an un-touched non-terminal
+			if(grammar.find(term) != grammar.end() && touched_rules.find(term) == touched_rules.end()) {
+				// Add term to touched rules
+				touched_rules.insert(term);
+				eliminate_dead_rules_helper(term, touched_rules);
+			}
+		}
+	}
 }
 
 /*

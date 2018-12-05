@@ -12,6 +12,7 @@
 #include "base_grammar.h"
 #include "binary_map_grammar.h"
 #include "dfa.h"
+#include "ea.h"
 
 using namespace std;
 
@@ -38,7 +39,7 @@ int main() {
 	//cout << a(inputs) << endl;
 	*/
 
-	vector<string> list({"1", "2", "3", "4"});
+	vector<string> list({"1", "5", "3", "4"});
 
 	vector<string> inputs;
 
@@ -55,16 +56,31 @@ int main() {
 		inputs.push_back(str);
 	}
 
-	shared_ptr<Base_grammar> grammar(new Binary_map_grammar(inputs)); // inputs.front()
-	shared_ptr<Base_grammar> other(new Binary_map_grammar(inputs.front()));
+	//shared_ptr<Base_grammar> grammar(new Binary_map_grammar(inputs[0])); // inputs.front()
+	//shared_ptr<Base_grammar> other(new Binary_map_grammar(inputs[1]));
+
+	//auto test = grammar;
+
+	vector<shared_ptr<Base_grammar> > population;
+	for(auto& i : inputs) {
+		population.emplace_back(new Binary_map_grammar(i));
+	}
+
+	Ea<Base_grammar> ea(population);
 
 	//cout << (*grammar) << endl;
 
-	auto test = grammar -> recombination(other);
+	//cout << (*grammar) << endl;
 
-	cout << *test.first << endl << endl;
+	//grammar -> abstract();
 
-	cout << *test.second << endl;
+	//cout << (*grammar) << endl;
+
+	//auto test = grammar -> recombination(other);
+
+	//cout << *test.first << endl << endl;
+
+	//cout << *test.second << endl;
 
 	/*
 	Dfa d("[a-zA-Z0-9_]+"); 

@@ -56,8 +56,15 @@ int main() {
 	}
 
 	shared_ptr<Base_grammar> grammar(new Binary_map_grammar(inputs)); // inputs.front()
+	shared_ptr<Base_grammar> other(new Binary_map_grammar(inputs.front()));
 
-	cout << (*grammar) << endl;
+	//cout << (*grammar) << endl;
+
+	auto test = grammar -> recombination(other);
+
+	cout << *test.first << endl << endl;
+
+	cout << *test.second << endl;
 
 	/*
 	Dfa d("[a-zA-Z0-9_]+"); 
@@ -74,7 +81,16 @@ int main() {
 		grammar -> find_fitness();
 	}*/
 
-	cout << (grammar -> find_fitness()) << endl;
+	/*
+	grammar -> mutate();
+
+	cout << endl;
+	cout << "-------------" << endl;
+	cout << (*grammar) << endl;
+	cout << "-------------" << endl;
+	grammar -> generate_strings();
+	*/
+	//cout << (grammar -> find_fitness()) << endl;
 
 
 	return 0;

@@ -79,7 +79,7 @@ Binary_map_grammar::Binary_map_grammar(const string& input) {
 	fitness = -9999;
 
 	// Set first non_terminal to be start symbol
-	uint32_t last_non_terminal;
+	uint32_t last_non_terminal = start_symbol;
 
 	// For each character in input
 	for(uint i = 0; i < input.size(); i++) {
@@ -181,8 +181,6 @@ vector<string> Binary_map_grammar::generate_strings() {
 		} else {
 			words.push_back(word);
 		}
-
-		cout << words.back() << endl;
 	}
 
 	return words;
@@ -209,7 +207,7 @@ string Binary_map_grammar::generate_string(const vector<vector<uint32_t> >& rule
 		// If terminal character, add it to word
 		if(binary_to_regex_mapping.find(non_terminal) != binary_to_regex_mapping.end()) {
 			word += binary_to_regex_mapping[non_terminal].generate_string();
-		} else { // Non-terminal
+		} else { // Non-terminal				
 			word += generate_string(grammar[non_terminal], depth + 1);
 		}
 	}

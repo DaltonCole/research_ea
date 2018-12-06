@@ -1,0 +1,14 @@
+# Config file
+
+# Size of population
+Population Size: 4
+
+# Parent Selection Method
+#	Can be either:
+#		* "Fitness Proportionate Selection"
+#		* "Tournament Selection"
+Parent Selection: Fitness Proportionate Selection
+
+# Number of parents for parent selection
+#	Must be less than population size
+Number of parents: 2

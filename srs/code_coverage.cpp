@@ -17,6 +17,7 @@ Code_coverage::Code_coverage() {
 }
 
 Code_coverage::Code_coverage(const string& command, const vector<string>& valid, const vector<string>& invalid) {
+	command_to_run = command;
 	valid_outputs = valid;
 	invalid_outputs = invalid;
 
@@ -94,6 +95,7 @@ float Code_coverage::operator()(const vector<string>& inputs) const {
 	vector<future<float> > threads;
 	for(uint i = 0; i < inputs.size(); i++) {
 		try {
+			
 			threads.push_back(async((*this), inputs[i], i));
 		} catch(string e) {
 			cout << e << endl;

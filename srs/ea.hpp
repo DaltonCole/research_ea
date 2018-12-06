@@ -1,26 +1,27 @@
 #include "ea.h"
 
-
-template <typename T> 
-Ea<T>::Ea() {
+Ea::Ea() {
 }
 
-template <typename T>
-Ea<T>::Ea(vector<shared_ptr<T> >& initial_population) {
+Ea::Ea(vector<shared_ptr<Base_grammar> >& initial_population) {
 	population = initial_population;
 }
 
-template <typename T>
-vector<shared_ptr<T> > Ea<T>::parent_selection() {
+void Ea::default_configurations() {
+	config["Population Size"] = 100;
+	config["Parent Selection"] = "Fitness Proportionate Selection";
+	config["Number of parents"] = 50;
+}
+
+vector<shared_ptr<Base_grammar> > Ea::parent_selection() {
 	if(config["Parent Selection"] == "Fitness Proportionate Selection") {
 		return fitness_proportionate_selection(config["Number of parents"]);
 	}
 }
 
 // Assumed every person in population already has fitness called
-template <typename T>
-vector<shared_ptr<T> > Ea<T>::fitness_proportionate_selection(const int size) const {
-	vector<shared_ptr<T> > selected;
+vector<shared_ptr<Base_grammar> > Ea::fitness_proportionate_selection(const int size) const {
+	vector<shared_ptr<Base_grammar> > selected;
 	float total_fitness;
 
 	for(const auto& person : population) {
@@ -44,13 +45,7 @@ vector<shared_ptr<T> > Ea<T>::fitness_proportionate_selection(const int size) co
 	return selected;
 }
 
-template <typename T> 
-void Ea<T>::default_configurations() {
-
-}
-
-template <typename T> 
-void Ea<T>::config_reader() {
+void Ea::config_reader() {
 	string line;
 	ifstream file("config.txt");
 	if(file.is_open()) {
@@ -71,8 +66,7 @@ void Ea<T>::config_reader() {
 	}
 }
 
-template <typename T> 
-void Ea<T>::config_reader_helper(const string& key, const string& line) {
+void Ea::config_reader_helper(const string& key, const string& line) {
 	string value = "";
 	int index = 0;
 	// Find start of value

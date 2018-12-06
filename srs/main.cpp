@@ -16,7 +16,12 @@
 
 using namespace std;
 
-int main() {
+int main(int argc, char *argv[]) {
+	if(argc != 2) {
+		cout << "NOPE!" << endl;
+		return 0;
+	}
+
 	// Initalize random
 	srand (time(NULL));
 	//string "kcov  /tmp/thing /home/drc/Desktop/CS5500/HW3/mipl_parser /home/drc/Desktop/CS5500/HW3/inputs/procCalls_noErrors.txt"
@@ -39,7 +44,7 @@ int main() {
 	//cout << a(inputs) << endl;
 	*/
 
-	vector<string> list({"1", "5", "3", "4"});
+	vector<string> list({"1", "2", "3", "4"});
 
 	vector<string> inputs;
 
@@ -66,7 +71,15 @@ int main() {
 		population.emplace_back(new Binary_map_grammar(i));
 	}
 
-	Ea<Base_grammar> ea(population);
+	//try {
+		Ea ea(population, argv[1]);
+
+		ea.run();
+	//} catch(...) {
+	//	cout << "Error occured" << endl;
+	//}
+
+	//ea.parent_selection();
 
 	//cout << (*grammar) << endl;
 

@@ -18,9 +18,11 @@ Ea::Ea(vector<shared_ptr<Base_grammar> >& initial_population, const char* config
 
 	population = initial_population;
 	best_grammar = population[0];
+	//best_grammar = shared_ptr<Base_grammar>(new decltype(*population[0])(*population[0]));
 }
 
 void ctrl_c_handler(int s) {
+	cout << endl;
 	cout << *Ea::best_grammar << endl;
 	cout << "Fitness: " << Ea::best_grammar -> get_fitness() << endl;
 	exit(1);
@@ -45,8 +47,10 @@ void Ea::run() {
 
 	while(true) {
 		// Print out progress
-		cout << "On iteration: " << genration << "\t"
-			 << "Current best fitness: " << (best_grammar -> get_fitness()) << "\r";
+		cout << "On iteration: " << genration << " \t"
+			 << "Current best fitness: " << (best_grammar -> get_fitness())
+			 << " / " << (Base_grammar::words_generated_count * 100)
+			 << "\t\t\t\r";
 		fflush(stdout);
 		genration++;
 
@@ -84,6 +88,7 @@ void Ea::default_configurations() {
 	config["Number of parents"] = "50";
 	config["Number of children"] = "50";
 	config["Mutation rate"] = "0.01";
+	config["Samples generated per fitness evaluation"] = "10";
 }
 
 vector<shared_ptr<Base_grammar> > Ea::parent_selection() {
@@ -142,8 +147,25 @@ void Ea::mutate(vector<shared_ptr<Base_grammar> >& mutate_population) const {
 
 // Update Fitness //
 void Ea::update_fitness(vector<shared_ptr<Base_grammar> >& fitness_population) const {
+	// Async threads
+	vector<future<void> > threads;
+
 	for(auto& person : fitness_population) {
+		// Call find fitness
 		person -> find_fitness();
+		//auto test = [=]{person -> find_fitness();};
+		//threads.push_back(async(test));
+		//threads.emplace_back(person -> find_fitness);
+		//threads.push_back((*person));
+		//auto test = [=]{person -> find_fitness();};
+		//threads.push_back(test);
+	}
+	//thread thread_1(&test_class::createS, this, 0, nCells/2, map1); 
+
+
+	for(auto& th : threads) {
+		// Join threads
+		th.get();
 	}
 }
 
@@ -278,6 +300,7 @@ void Ea::config_reader(const char* config_file) {
 
 	// Update static necessary static variables
 	Base_grammar::mutate_rate = stof(config["Mutation rate"]);
+	Base_grammar::words_generated_count = stoi(config["Samples generated per fitness evaluation"]);
 
 	config_checker();
 }

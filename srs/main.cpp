@@ -66,6 +66,9 @@ int main(int argc, char *argv[]) {
 
 	//auto test = grammar;
 
+	//shared_ptr<Base_grammar> apple(new Binary_map_grammar());
+	//shared_ptr<Base_grammar> ban(new decltype(*apple)());
+
 	vector<shared_ptr<Base_grammar> > population;
 	for(auto& i : inputs) {
 		population.emplace_back(new Binary_map_grammar(i));

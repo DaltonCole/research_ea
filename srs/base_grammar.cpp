@@ -1,6 +1,6 @@
 #include "base_grammar.h"
 
-const int Base_grammar::words_generated_count = 100;
+int Base_grammar::words_generated_count = 10;
 float Base_grammar::mutate_rate = 1;//0.1; // NOTE: change
 
 bool Base_grammar::success() const {

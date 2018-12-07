@@ -8,6 +8,8 @@
 #include <fstream>
 #include <string>
 #include <algorithm>
+#include <thread>
+#include <future>
 // sigaction //
 #include <signal.h>
 #include <stdlib.h>

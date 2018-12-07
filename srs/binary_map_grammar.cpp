@@ -1,12 +1,11 @@
 #include "binary_map_grammar.h"
 
-const int Binary_map_grammar::words_generated_count = 5;
 unordered_map<char, uint32_t> Binary_map_grammar::char_to_binary_mapping;
 unordered_map<uint32_t, Dfa> Binary_map_grammar::binary_to_regex_mapping;
 uint32_t Binary_map_grammar::next_available_mapping = 1;
 const uint32_t Binary_map_grammar::start_symbol = 0;
-const int Binary_map_grammar::max_string_depth = 100;
-const int Binary_map_grammar::max_failed_attempts = 100;
+int Binary_map_grammar::max_string_depth = 100;
+int Binary_map_grammar::max_failed_attempts = 100;
 
 // NOTE: NEED TO ADD THESE binary_to_regex_mapping
 const vector<Dfa> Binary_map_grammar::common_patterns = {
@@ -195,11 +194,9 @@ string Binary_map_grammar::generate_string(const vector<vector<uint32_t> >& rule
 
 	string word = "";
 
-	// Throw error if bad size
+	// No rules = lambda
 	if(rules.size() == 0) {
-		string s = "Error in generate_string! Rule size is 0!";
-		cerr << s << endl;
-		throw s;
+		return word;
 	}
 
 	int random_rule = rand() % rules.size();

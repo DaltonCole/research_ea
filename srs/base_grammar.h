@@ -27,7 +27,7 @@ class Base_grammar {
 		friend ostream & operator << (ostream&, const Base_grammar&);
 
 	//private:
-		static const int words_generated_count;
+		static int words_generated_count;
 		static float mutate_rate; // Between 0 and 1
 };
 

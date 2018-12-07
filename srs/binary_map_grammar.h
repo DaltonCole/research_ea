@@ -52,7 +52,6 @@ class Binary_map_grammar : public Base_grammar {
 		float fitness;
 		bool max_depth_reached;
 
-		static const int words_generated_count;
 		// NOTE: Might pre-compute this so minor binary changes correlate to minor ascii changes
 		static unordered_map<char, uint32_t> char_to_binary_mapping; 
 		static unordered_map<uint32_t, Dfa> binary_to_regex_mapping;
@@ -65,10 +64,10 @@ class Binary_map_grammar : public Base_grammar {
 		static const uint32_t start_symbol;
 
 		// Max depth for a single rule
-		static const int max_string_depth;
+		static int max_string_depth;
 
 		// Number of failed attempts allowed when generating a string
-		static const int max_failed_attempts;
+		static int max_failed_attempts;
 };
 
 #endif

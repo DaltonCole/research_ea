@@ -19,4 +19,9 @@ Number of children: 2
 
 # Mutation Rate
 #	Float between 0 and 1
+#	Defaults to 0.01
 Mutation rate: 0.05
+
+# Number of samples to generate
+#	Defaults to 10
+Samples generated per fitness evaluation: 10

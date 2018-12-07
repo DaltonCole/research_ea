@@ -194,6 +194,14 @@ string Binary_map_grammar::generate_string(const vector<vector<uint32_t> >& rule
 	}
 
 	string word = "";
+
+	// Throw error if bad size
+	if(rules.size() == 0) {
+		string s = "Error in generate_string! Rule size is 0!";
+		cerr << s << endl;
+		throw s;
+	}
+
 	int random_rule = rand() % rules.size();
 
 	// Randomly choose rules until termination
@@ -225,7 +233,9 @@ float Binary_map_grammar::find_fitness() {
 
 float Binary_map_grammar::get_fitness() const {
 	if(fitness == -9999) {
-		throw "Fitness not yet set!";
+		string s = "Fitness not yet set!";
+		cerr << s << endl;
+		throw s;
 	}
 
 	return fitness;
@@ -244,6 +254,12 @@ void Binary_map_grammar::mutate() {
 		if(success()) {
 			uint32_t a_term = random_term();
 			if(grammar.find(a_term) != grammar.end()) {
+				// Throw error if bad size
+				if(grammar[a_term].size() == 0) {
+					string s = "Error in mutate! Rules size is 0!";
+					cerr << s << endl;
+					throw s;
+				}
 				rules.second.push_back(grammar[a_term][rand() % grammar[a_term].size()]);
 			}
 		}
@@ -251,6 +267,12 @@ void Binary_map_grammar::mutate() {
 		for(auto& rule : rules.second) {
 			// Add to rule (insert)
 			if(success()) {
+				// Throw error if bad size
+				if(rule.size() == 0) {
+					string s = "Error in mutate! Rule size is 0!";
+					cerr << s << endl;
+					throw s;
+				}
 				rule.insert(rule.begin() + (rand() % rule.size()), random_term()); // NOTE: CAN CAUSE GRAMMAR TO NEVER END
 			}
 

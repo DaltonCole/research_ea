@@ -12,7 +12,9 @@ Code_coverage::Code_coverage() {
 	string dir_command = "mkdir -p " + tmp_directory;
 	const int dir_err = system(dir_command.c_str());
 	if(dir_err == -1) {
-		throw "Directory " + tmp_directory + " was not created!";
+		string s = "Directory " + tmp_directory + " was not created!";
+		cerr << s << endl;
+		throw s;
 	}
 }
 
@@ -25,7 +27,9 @@ Code_coverage::Code_coverage(const string& command, const vector<string>& valid,
 	string dir_command = "mkdir -p " + tmp_directory;
 	const int dir_err = system(dir_command.c_str());
 	if(dir_err == -1) {
-		throw "Directory " + tmp_directory + " was not created!";
+		string s = "Directory " + tmp_directory + " was not created!";
+		cerr << s << endl;
+		throw s;
 	}
 }
 
@@ -59,7 +63,9 @@ float Code_coverage::operator()(const string& input, const int index) const {
 		input_file << input;
 		input_file.close();
 	} else {
-		throw "File \"" + tmp_directory + to_string(index) + ".txt" + "\" did not open!";
+		string s = "File \"" + tmp_directory + to_string(index) + ".txt" + "\" did not open!";
+		cerr << s << endl;
+		throw s;
 	}
 
 	// Make sure no error occured while parsing
@@ -81,7 +87,9 @@ float Code_coverage::operator()(const string& input, const int index) const {
 			}
 			infile.close();
 		} else {
-			throw "File \"" + tmp_directory + to_string(index) + kcov_saved_path + "\" did not open!";
+			string s = "File \"" + tmp_directory + to_string(index) + kcov_saved_path + "\" did not open!";
+			cerr << s << endl;
+			throw s;
 		}
 	}
 
@@ -95,7 +103,7 @@ float Code_coverage::operator()(const vector<string>& inputs) const {
 	vector<future<float> > threads;
 	for(uint i = 0; i < inputs.size(); i++) {
 		try {
-			
+
 			threads.push_back(async((*this), inputs[i], i));
 		} catch(string e) {
 			cout << e << endl;

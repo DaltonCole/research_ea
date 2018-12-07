@@ -1,5 +1,7 @@
 #include "ea.h"
 
+shared_ptr<Base_grammar> Ea::best_grammar = nullptr;
+
 Ea::Ea() {
 }
 
@@ -15,19 +17,73 @@ Ea::Ea(vector<shared_ptr<Base_grammar> >& initial_population, const char* config
 	}
 
 	population = initial_population;
+	best_grammar = population[0];
+}
+
+void ctrl_c_handler(int s) {
+	cout << *Ea::best_grammar << endl;
+	cout << "Fitness: " << Ea::best_grammar -> get_fitness() << endl;
+	exit(1);
 }
 
 void Ea::run() {
-	for(auto& person : population) {
-		person -> find_fitness();
+	// Set up signal handler to print out best grammar so far
+	struct sigaction sigIntHandler;
+	sigIntHandler.sa_handler = ctrl_c_handler;
+	sigemptyset(&sigIntHandler.sa_mask);
+	sigIntHandler.sa_flags = 0;
+	sigaction(SIGINT, &sigIntHandler, NULL);
+
+	// Keep track of generation
+	int genration = 0;
+	cout << "On iteration: " << genration << "\r";
+	fflush(stdout);
+	genration++;
+
+	// Set initial population's fitness
+	update_fitness(population);
+
+	while(true) {
+		// Print out progress
+		cout << "On iteration: " << genration << "\t"
+			 << "Current best fitness: " << (best_grammar -> get_fitness()) << "\r";
+		fflush(stdout);
+		genration++;
+
+		// Parent Selection
+		auto parents = parent_selection();
+
+		// Generate children
+		auto children = generate_children(parents);
+
+		// Combine population
+		for(auto& child : children) {
+			population.push_back(child);
+		}
+
+		// Mutate
+		mutate(population);
+
+		// Update fitness
+		update_fitness(population);
+
+		// --- Kill --- //
+		sort_population();
+		kill_population();
+
+		// Update hall of fame best grammar
+		if(population.size() > 0 && population[0] -> get_fitness() > best_grammar -> get_fitness()) {
+			best_grammar = population[0];
+		}
 	}
-	parent_selection();
 }
 
 void Ea::default_configurations() {
 	config["Population Size"] = "100";
 	config["Parent Selection"] = "Fitness Proportionate Selection";
 	config["Number of parents"] = "50";
+	config["Number of children"] = "50";
+	config["Mutation rate"] = "0.01";
 }
 
 vector<shared_ptr<Base_grammar> > Ea::parent_selection() {
@@ -38,6 +94,73 @@ vector<shared_ptr<Base_grammar> > Ea::parent_selection() {
 	}
 
 	return {};
+}
+
+
+
+// Children //
+vector<shared_ptr<Base_grammar> > Ea::generate_children
+(const vector<shared_ptr<Base_grammar> >& parents) {
+	// Children population
+	vector<shared_ptr<Base_grammar> > children;
+	// Subset of parent population - Gets decreased as parents are selected
+	unordered_set<shared_ptr<Base_grammar> > parents_to_choose_from;
+
+	// Populate parents to choose from
+	for(const auto& par : parents) {
+		parents_to_choose_from.insert(par);
+	}
+
+	while(children.size() < stoi(config["Number of children"])) {
+		// Shuffle in all possible parents if we need more options
+		if(parents_to_choose_from.size() < 2) {
+			for(const auto& par : parents) {
+				parents_to_choose_from.insert(par);
+			}
+		}
+
+		auto first_mate = random_grammar_from_unordered_set(parents_to_choose_from);
+		parents_to_choose_from.erase(parents_to_choose_from.find(first_mate));
+		auto second_mate = random_grammar_from_unordered_set(parents_to_choose_from);
+		parents_to_choose_from.erase(parents_to_choose_from.find(second_mate));
+
+		auto couple = first_mate -> recombination(second_mate);
+
+		children.push_back(couple.first);
+		children.push_back(couple.second);
+	}
+
+	return children;
+}
+
+// Mutate //
+void Ea::mutate(vector<shared_ptr<Base_grammar> >& mutate_population) const {
+	for(auto& person : mutate_population) {
+		person -> mutate();
+	}
+}
+
+// Update Fitness //
+void Ea::update_fitness(vector<shared_ptr<Base_grammar> >& fitness_population) const {
+	for(auto& person : fitness_population) {
+		person -> find_fitness();
+	}
+}
+
+// Kill //
+void Ea::sort_population() {
+	sort(population.begin(), population.end(),
+		[](const shared_ptr<Base_grammar>& a, const shared_ptr<Base_grammar>& b) -> bool {
+			return a -> get_fitness() > b -> get_fitness();
+		});
+}
+
+void Ea::kill_population() {
+	population = survivor_selection();
+}
+
+vector<shared_ptr<Base_grammar> > Ea::survivor_selection() {
+	return parent_selection();
 }
 
 // Assumed every person in population already has fitness called
@@ -94,27 +217,21 @@ vector<shared_ptr<Base_grammar> > Ea::tournament_selection(const uint size) cons
 		population_to_pick_from.insert(person);
 	}
 
-	// Random element indexes
-	int first;
-	int second;
 	// Random elements
 	shared_ptr<Base_grammar> one;
 	shared_ptr<Base_grammar> two;
 
 	while(selected.size() < size) {
-		// Randomly select two elements
-		first = random() % population_to_pick_from.size();
-		second = random() % population_to_pick_from.size();
+		// If need more to choose from, add from population
+		if(population_to_pick_from.size() < 2) {
+			for(auto& person : population) {
+				population_to_pick_from.insert(person);
+			}
+		}
 
-		// Go to first index and set one
-		auto it = population_to_pick_from.begin();
-		for(int i = 0; i < first; i++, it++) {}
-		one = *it;
-
-		// Go to second index and set two
-		it = population_to_pick_from.begin();
-		for(int i = 0; i < first; i++, it++) {}
-		two = *it;
+		// Randomly select two grammars
+		one = random_grammar_from_unordered_set(population_to_pick_from);
+		two = random_grammar_from_unordered_set(population_to_pick_from);
 
 		if(one -> get_fitness() < two -> get_fitness()) {
 			one = two;
@@ -154,8 +271,13 @@ void Ea::config_reader(const char* config_file) {
 		}
 		file.close();
 	} else {
-		throw "config.txt failed to open!";
+		string s = "config.txt failed to open!";
+		cerr << s << endl;
+		throw s;
 	}
+
+	// Update static necessary static variables
+	Base_grammar::mutate_rate = stof(config["Mutation rate"]);
 
 	config_checker();
 }
@@ -191,4 +313,19 @@ void Ea::config_reader_helper(const string& key, const string& line) {
 
 void Ea::config_checker() const {
 
+}
+
+shared_ptr<Base_grammar> Ea::random_grammar_from_unordered_set(const unordered_set<shared_ptr<Base_grammar> > options) const {
+	if(options.size() == 0) {
+		string s = "Error in random_grammar_from_unordered_set! Population size is 0!";
+		cerr << s << endl;
+		throw s;
+	}
+
+	// Select random number
+	int count = rand() % options.size();
+	// Go to random index
+	auto it = options.begin();
+	for(int i = 0; i < count; i++, it++) {}
+	return *it;
 }

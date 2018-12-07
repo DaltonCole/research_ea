@@ -11,4 +11,12 @@ Parent Selection: Fitness Proportionate Selection
 
 # Number of parents for parent selection
 #	Must be less than population size
+#	Need at least two parents
 Number of parents: 2
+
+# Number of children
+Number of children: 2
+
+# Mutation Rate
+#	Float between 0 and 1
+Mutation rate: 0.05

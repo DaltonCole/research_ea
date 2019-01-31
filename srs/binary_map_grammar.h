@@ -31,6 +31,7 @@ class Binary_map_grammar : public Base_grammar {
 		virtual vector<string> generate_strings();
 		string generate_string(const vector<vector<uint32_t> >& rules, const int depth);
 
+		virtual std::thread find_fitness_thread();
 		virtual float find_fitness();
 		virtual float get_fitness();
 

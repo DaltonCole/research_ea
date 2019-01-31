@@ -40,8 +40,7 @@ void Ea::run() {
 
 	// Keep track of generation
 	int genration = 0;
-	cout << "On iteration: " << genration << "\r";
-	fflush(stdout);
+	print_progress(genration, 7, "Update Fitness");
 	genration++;
 
 	// Set initial population's fitness
@@ -162,12 +161,18 @@ void Ea::mutate(vector<shared_ptr<Base_grammar> >& mutate_population) const {
 
 // Update Fitness //
 void Ea::update_fitness(vector<shared_ptr<Base_grammar> >& fitness_population) const {
-	// Async threads
-	vector<future<void> > threads;
+	// Threads
+	//vector<future<void> > threads;
+	vector<thread> threads;
 
 	for(auto& person : fitness_population) {
 		// Call find fitness
-		person -> find_fitness();
+		//person -> find_fitness();
+
+		threads.push_back(person -> find_fitness_thread());
+
+
+
 		//auto test = [=]{person -> find_fitness();};
 		//threads.push_back(async(test));
 		//threads.emplace_back(person -> find_fitness);
@@ -180,8 +185,11 @@ void Ea::update_fitness(vector<shared_ptr<Base_grammar> >& fitness_population) c
 
 	for(auto& th : threads) {
 		// Join threads
-		th.get();
+		th.join();
 	}
+
+	// Clean up tmp directories from code_coverage
+	Code_coverage::clean_up();
 }
 
 // Kill //

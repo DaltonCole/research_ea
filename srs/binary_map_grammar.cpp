@@ -225,6 +225,10 @@ string Binary_map_grammar::generate_string(const vector<vector<uint32_t> >& rule
 	return word;
 }
 
+std::thread Binary_map_grammar::find_fitness_thread() {
+	return std::thread(&Binary_map_grammar::find_fitness, this);
+}
+
 float Binary_map_grammar::find_fitness() {
 	Code_coverage code_coverage;
 
@@ -375,7 +379,7 @@ void Binary_map_grammar::condense_repetition() {
 						}
 						// -- If other key has multiple rules -- //
 						else if(grammar[rule[i]].size() > 1) {
-							
+
 						}
 
 					}
@@ -402,9 +406,11 @@ void Binary_map_grammar::condense_repetition() {
 		}
 	}
 
+	/*
 	cout << "-------------------------------------" << endl;
 	cout << *this << endl;
 	cout << "-------------------------------------" << endl;
+	*/
 }
 
 void Binary_map_grammar::remove_rules_only_containing_epsilon() {

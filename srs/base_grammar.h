@@ -5,6 +5,7 @@
 #include <utility>
 #include <vector>
 #include <memory>
+#include <thread>
 using namespace std;
 
 class Base_grammar {
@@ -12,6 +13,8 @@ class Base_grammar {
 		virtual shared_ptr<Base_grammar> clone() const = 0;
 
 		virtual vector<string> generate_strings() = 0;
+
+		virtual std::thread find_fitness_thread() = 0;
 		virtual float find_fitness() = 0;
 		virtual float get_fitness() = 0;
 

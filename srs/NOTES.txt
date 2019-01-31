@@ -1,0 +1,7 @@
+* Fitness function decrease with more rules
+* 
+
+S -> aQ
+Q -> aR
+...
+Try to condense to S -> aS | aR

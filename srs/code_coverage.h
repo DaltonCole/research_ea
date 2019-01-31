@@ -11,6 +11,7 @@
 #include <fstream>
 #include <cstdlib>
 #include <future>
+#include <mutex>
 using namespace std;
 
 class Code_coverage {
@@ -20,17 +21,20 @@ class Code_coverage {
 		~Code_coverage();
 
 		// Accept word, output percent of code covered
-		// 		might just overload the function operator
-		float operator()(const string& input, const int index) const;
+		float operator()(const string& input);
 
 		// Call () on a vector of inputs
-		float operator()(const vector<string>& inputs) const;
+		float operator()(const vector<string>& inputs);
 
 		// Make sure input consists of valid strings and no invalid strings
 		bool valid_input(const string& input) const;
 
 		// Parse json file's correct line from () and returns coverage's float
 		float parse_json_line_containing_code_coverage(const string& input) const;
+
+		// Get temp directory index
+		int get_index();
+		static void clean_up();
 
 	private:
 		string command_to_run;
@@ -41,6 +45,9 @@ class Code_coverage {
 
 		static const string tmp_directory;
 		static const string kcov_saved_path;
+
+		static int directory_index;
+		static std::mutex mtx;
 };
 
 #endif

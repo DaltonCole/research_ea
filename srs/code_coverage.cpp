@@ -4,6 +4,9 @@ const string Code_coverage::tmp_directory = "/tmp/kcov_temp_code_coverage/";
 // Is ".8159829a7e16cfa9" always constant?
 const string Code_coverage::kcov_saved_path = "/mipl_parser/coverage.json";
 
+int Code_coverage::directory_index = 0;
+std::mutex Code_coverage::mtx;
+
 Code_coverage::Code_coverage() {
 	valid_outputs = {};
 	invalid_outputs = {"Line"};
@@ -45,8 +48,38 @@ Code_coverage::~Code_coverage() {
 	*/
 }
 
+int Code_coverage::get_index() {
+	Code_coverage::mtx.lock();
+	int index = directory_index;
+	directory_index++;
+	Code_coverage::mtx.unlock();
 
-float Code_coverage::operator()(const string& input, const int index) const {
+	return index;
+}
+
+// Called after all code_coverage runs are finished in ea.cpp
+// Removes tmp directories
+void Code_coverage::clean_up() {
+	/*
+	for(int i = 0; i < directory_index; i++) {
+
+	}
+	*/
+	// Delete tmp directory
+	string command = "rm -r " + tmp_directory;
+	const int dir_err = system(command.c_str());
+	
+	if(dir_err == -1) {
+		throw "Directory " + tmp_directory + " was not deleted!";
+	}
+
+	directory_index = 0;
+}
+
+
+float Code_coverage::operator()(const string& input) {
+	int index = get_index();
+
 	// NOTE: HAVE THIS MORE ABSTRACT //
 	string kcov_command = "kcov " + tmp_directory + to_string(index) 
 	+ " /home/drc/Desktop/CS5500/HW3/mipl_parser "
@@ -97,14 +130,14 @@ float Code_coverage::operator()(const string& input, const int index) const {
 	return -1.0;
 }
 
-float Code_coverage::operator()(const vector<string>& inputs) const {
+float Code_coverage::operator()(const vector<string>& inputs) {
 	float total = 0.0;
 
 	// Async threads
 	vector<future<float> > threads;
 	for(uint i = 0; i < inputs.size(); i++) {
 		try {
-			threads.push_back(async((*this), inputs[i], i));
+			threads.push_back(async((*this), inputs[i]));
 		} catch(string e) {
 			cout << e << endl;
 		}

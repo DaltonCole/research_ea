@@ -17,6 +17,7 @@
 #include <unistd.h>
 ///////////////
 #include "base_grammar.h"
+#include "code_coverage.h"
 using namespace std;
 
 class Ea {

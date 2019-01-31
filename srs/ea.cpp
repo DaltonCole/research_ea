@@ -17,11 +17,13 @@ Ea::Ea(vector<shared_ptr<Base_grammar> >& initial_population, const char* config
 	}
 
 	population = initial_population;
-	best_grammar = population[0];
-	//best_grammar = shared_ptr<Base_grammar>(new decltype(*population[0])(*population[0]));
+	best_grammar = population[0] -> clone();
 }
 
 void ctrl_c_handler(int s) {
+	for(int i = 0; i < 100; i++) {
+		Ea::best_grammar -> abstract();
+	}
 	cout << endl;
 	cout << *Ea::best_grammar << endl;
 	cout << "Fitness: " << Ea::best_grammar -> get_fitness() << endl;
@@ -46,40 +48,53 @@ void Ea::run() {
 	update_fitness(population);
 
 	while(true) {
-		// Print out progress
-		cout << "On iteration: " << genration << " \t"
-			 << "Current best fitness: " << (best_grammar -> get_fitness())
-			 << " / " << (Base_grammar::words_generated_count * 100)
-			 << "\t\t\t\r";
-		fflush(stdout);
-		genration++;
-
 		// Parent Selection
+		print_progress(genration, 1, "Parent Selection");
 		auto parents = parent_selection();
 
 		// Generate children
+		print_progress(genration, 2, "Generate Children");
 		auto children = generate_children(parents);
 
 		// Combine population
+		print_progress(genration, 3, "Combine Population");
 		for(auto& child : children) {
+			// Combine child with the population
 			population.push_back(child);
 		}
 
 		// Mutate
+		print_progress(genration, 4, "Mutate");
 		mutate(population);
 
 		// Update fitness
+		print_progress(genration, 5, "Update Fitness");
 		update_fitness(population);
 
 		// --- Kill --- //
+		print_progress(genration, 6, "Sort Population");
 		sort_population();
+		print_progress(genration, 7, "Kill ψ(｀∇´)ψ");
 		kill_population();
 
 		// Update hall of fame best grammar
 		if(population.size() > 0 && population[0] -> get_fitness() > best_grammar -> get_fitness()) {
-			best_grammar = population[0];
+			best_grammar = population[0] -> clone();
 		}
+
+		genration++;
 	}
+}
+
+void Ea::print_progress(const int genration, const int step_count, const string& step) {
+	cout << "On iteration: " << genration << " \t"
+		 << "Current best fitness: " << (best_grammar -> get_fitness())
+		 << " / " << (Base_grammar::words_generated_count * 100)
+		 << "\t"
+		 << step_count << " / 7 \t" << step  
+		 << "\t\t\r";
+	
+	fflush(stdout);
 }
 
 void Ea::default_configurations() {

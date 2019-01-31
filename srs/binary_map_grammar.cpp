@@ -165,6 +165,11 @@ Binary_map_grammar::Binary_map_grammar(const vector<string>& inputs) {
 	}
 }
 
+shared_ptr<Base_grammar> Binary_map_grammar::clone() const {
+	return shared_ptr<Base_grammar>(new Binary_map_grammar(*this));
+}
+
+
 vector<string> Binary_map_grammar::generate_strings() {
 	// List of words
 	vector<string> words;
@@ -223,16 +228,26 @@ string Binary_map_grammar::generate_string(const vector<vector<uint32_t> >& rule
 float Binary_map_grammar::find_fitness() {
 	Code_coverage code_coverage;
 
-	fitness = code_coverage(generate_strings());
+	vector<string> samples = generate_strings();
+
+	sort(samples.begin(), samples.end());
+	auto it = unique(samples.begin(), samples.end());
+	samples.resize(std::distance(samples.begin(), it));
+
+	fitness = code_coverage(samples);
+
+	// --- Favor smaller rules sets --- //
+	// Do this by simply subtracting the fitness by the number of rules in grammar
+	// Favors rules with multiple possibilities
+	// ex A -> aB  | cD
+	fitness -= grammar.size();
 
 	return fitness;
 }
 
-float Binary_map_grammar::get_fitness() const {
+float Binary_map_grammar::get_fitness() {
 	if(fitness == -9999) {
-		string s = "Fitness not yet set!";
-		cerr << s << endl;
-		throw s;
+		find_fitness();
 	}
 
 	return fitness;
@@ -253,11 +268,12 @@ void Binary_map_grammar::mutate() {
 			if(grammar.find(a_term) != grammar.end()) {
 				// Throw error if bad size
 				if(grammar[a_term].size() == 0) {
-					string s = "Error in mutate! Rules size is 0!";
+					string s = "Error in mutate! Rules size is 0! 1";
 					cerr << s << endl;
-					throw s;
+					//throw s;
+				} else {
+					rules.second.push_back(grammar[a_term][rand() % grammar[a_term].size()]);
 				}
-				rules.second.push_back(grammar[a_term][rand() % grammar[a_term].size()]);
 			}
 		}
 
@@ -266,11 +282,12 @@ void Binary_map_grammar::mutate() {
 			if(success()) {
 				// Throw error if bad size
 				if(rule.size() == 0) {
-					string s = "Error in mutate! Rule size is 0!";
+					string s = "Error in mutate! Rule size is 0! 2";
 					cerr << s << endl;
-					throw s;
+					//throw s;
+				} else {
+					rule.insert(rule.begin() + (rand() % rule.size()), random_term()); // NOTE: CAN CAUSE GRAMMAR TO NEVER END
 				}
-				rule.insert(rule.begin() + (rand() % rule.size()), random_term()); // NOTE: CAN CAUSE GRAMMAR TO NEVER END
 			}
 
 			// For each (non)terminal in each rule
@@ -282,6 +299,9 @@ void Binary_map_grammar::mutate() {
 			}
 		}
 	}
+
+	// Abstract rules out with "mutate" probability
+	abstract();
 }
 
 uint32_t Binary_map_grammar::random_term() const {
@@ -291,7 +311,126 @@ uint32_t Binary_map_grammar::random_term() const {
 // Try to combine rules to make it more CFG-like (instead of regex)
 // Abstract out terminals (ex p = [a-z])
 void Binary_map_grammar::abstract() {
-	eliminate_dead_rules();
+	if(success()) { // NOTE: Might make absolute instead of probabilistic
+		//eliminate_dead_rules();
+	}
+	if(1) {
+		condense_repetition();
+	}
+	// Remove rules that only contain an epsilon
+	if(1) {
+		remove_rules_only_containing_epsilon();
+	}
+}
+
+// Attempt to condense rules adhering to the following example:
+// S -> aQ
+// Q -> aR ...
+// Try to condense to S -> aS | aR
+//
+void Binary_map_grammar::condense_repetition() {
+	// Keys in grammar
+	unordered_set<uint32_t> keys;
+	for(const auto& non_terminal : grammar) {
+		keys.insert(non_terminal.first);
+	}
+
+	// For each rule
+	for(auto& rules : grammar) {
+		vector<vector<uint32_t> > rules_to_add;
+		decltype(grammar) rules_to_remove;
+		for(auto& rule : rules.second) {
+			// If there is a terminal followed by a non-terminal
+			for(uint i = 1; i < rule.size(); i++) {
+				// If rule[i] is a non-terminal that isn't the same as rules.first
+				if(keys.find(rule[i]) != keys.end() && rule[i] != rules.first) {
+					// If rule[i-1] is a terminal
+					if(keys.find(rule[i-1]) == keys.end()) {
+						// Check to see if rule[i] -> stuff
+						// starts with the same terminal as rule[i-1]
+						
+						// -- If other key only has one rule -- //
+						if(grammar[rule[i]].size() == 1) {
+							// If there are 1 or more (non)terminals and
+							// 	first terminal is the same as rule[i-1]
+							if(grammar[rule[i]][0].size() > 0 && 
+								grammar[rule[i]][0][0] == rule[i-1]) {
+								// Add recursion to the rule so multiples of the terminal
+								// can happen i.e. S -> aS
+								vector<uint32_t> recursive_rule;
+								recursive_rule.push_back(rule[i-1]);
+								recursive_rule.push_back(rules.first);
+								rules_to_add.push_back(recursive_rule);
+
+								// For each part after the similar terminal
+								for(uint j = 1; j < grammar[rule[i]][0].size(); j++) {
+									// Insert inserts before the specified location
+									rule.insert(rule.begin() + i + j, grammar[rule[i]][0][j]);
+								}
+
+								// --- Remove ---
+								// Add to rules_to_remove
+								rules_to_remove[rule[i]].push_back(grammar[rule[i]][0]);
+							} 
+						}
+						// -- If other key has multiple rules -- //
+						else if(grammar[rule[i]].size() > 1) {
+							
+						}
+
+					}
+
+					// Since current part is a non-terminal, skip next search
+					i++;
+				}
+			}
+		}
+		// Add all rules_to_add to grammar rules
+		for(auto& r : rules_to_add) {
+			rules.second.push_back(r);
+		}
+
+		// Remove rules that should be deleted
+		for(auto& r : rules_to_remove) {
+			for(auto& rule : r.second) {
+				auto it = find(grammar[r.first].begin(), grammar[r.first].end() , rule);
+
+				if(it != grammar[r.first].end()) {
+					grammar[r.first].erase(it);
+				}
+			}
+		}
+	}
+
+	cout << "-------------------------------------" << endl;
+	cout << *this << endl;
+	cout << "-------------------------------------" << endl;
+}
+
+void Binary_map_grammar::remove_rules_only_containing_epsilon() {
+	unordered_set<uint32_t> epsilon_rules;
+
+	// Find epsilon rules
+	for(const auto& gram : grammar) {
+		if(gram.second.size() == 0) {
+			// Add to remove list
+			epsilon_rules.insert(gram.first);
+			
+		}
+	}
+
+	// Remove empty rules from grammar
+	for(const auto& ep_rule : epsilon_rules) {
+		grammar.erase(ep_rule);
+	}
+
+	for(auto& gram : grammar) {
+		for(auto& rule : gram.second) {
+			for(const auto& ep_rule : epsilon_rules) {
+				rule.erase(remove(rule.begin(), rule.end(), ep_rule), rule.end());
+			}
+		}
+	}
 }
 
 void Binary_map_grammar::eliminate_dead_rules() {
@@ -411,8 +550,14 @@ Binary_map_grammar::recombination(shared_ptr<Base_grammar>& mate) {
 }
 
 void Binary_map_grammar::print(ostream& os) const {
-	// For each grammar non terminal
+	map<uint32_t, vector<vector<uint32_t> > > ordered_gramar;
+
 	for(const auto& gram : grammar) {
+		ordered_gramar[gram.first] = gram.second;
+	}
+
+	// For each grammar non terminal
+	for(const auto& gram : ordered_gramar) {
 		// Highlight start symbol
 		if(gram.first == start_symbol) {
 			os << "\033[43m" << "Start Symbol" << "\033[0m" << endl;

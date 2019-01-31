@@ -9,9 +9,11 @@ using namespace std;
 
 class Base_grammar {
 	public:
+		virtual shared_ptr<Base_grammar> clone() const = 0;
+
 		virtual vector<string> generate_strings() = 0;
 		virtual float find_fitness() = 0;
-		virtual float get_fitness() const = 0;
+		virtual float get_fitness() = 0;
 
 		virtual void mutate() = 0;
 

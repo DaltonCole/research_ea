@@ -44,10 +44,11 @@ int main(int argc, char *argv[]) {
 	//cout << a(inputs) << endl;
 	*/
 
-	vector<string> list({"1", "2", "3", "4"});
+	//vector<string> list({"1", "2", "3", "4"});
 
 	vector<string> inputs;
 
+	/*
 	for(uint i = 0; i < list.size(); i++) {
 		std::ifstream t("/home/drc/Desktop/Research/ea/tester_parser/" + list[i]);
 		string str;
@@ -59,6 +60,18 @@ int main(int argc, char *argv[]) {
 		}
 
 		inputs.push_back(str);
+	}
+	*/
+
+	while(inputs.size() < 100) {
+		string s = "";
+		for(int i = 0; i < rand() % 100; i++) {
+			s += "a";
+		}
+		for(int i = 0; i < rand() % 100; i++) {
+			s += "b";
+		}
+		inputs.push_back(s);
 	}
 
 	//shared_ptr<Base_grammar> grammar(new Binary_map_grammar(inputs[0])); // inputs.front()

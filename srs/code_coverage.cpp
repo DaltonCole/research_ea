@@ -93,7 +93,8 @@ float Code_coverage::operator()(const string& input, const int index) const {
 		}
 	}
 
-	return 0.0;
+	// If invalid input, subtract 1 from fitness
+	return -1.0;
 }
 
 float Code_coverage::operator()(const vector<string>& inputs) const {

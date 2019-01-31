@@ -3,12 +3,14 @@
 
 #include <utility>
 #include <unordered_map>
+#include <map>
 #include <unordered_set>
 //#include <regex>
 #include <vector>
 #include <cstdint>
 #include <memory>
 #include <future>
+#include <algorithm>
 #include "dfa.h"
 #include "base_grammar.h"
 #include "code_coverage.h"
@@ -24,11 +26,13 @@ class Binary_map_grammar : public Base_grammar {
 		// Multiple example input
 		Binary_map_grammar(const vector<string>& inputs);
 
+		virtual shared_ptr<Base_grammar> clone() const;
+
 		virtual vector<string> generate_strings();
 		string generate_string(const vector<vector<uint32_t> >& rules, const int depth);
 
 		virtual float find_fitness();
-		virtual float get_fitness() const;
+		virtual float get_fitness();
 
 		virtual void mutate();
 
@@ -37,6 +41,9 @@ class Binary_map_grammar : public Base_grammar {
 		virtual void abstract();
 
 		// --- Abstract helpers ---
+		void condense_repetition();
+		void remove_rules_only_containing_epsilon();
+
 		void eliminate_dead_rules();
 		void eliminate_dead_rules_helper
 		(const uint32_t non_terminal, unordered_set<uint32_t>& touched_rules);

@@ -26,6 +26,8 @@ class Ea {
 
 
 		void run();
+		void print_progress(const int genration, const int step_count, const string& step);
+
 		friend void ctrl_c_handler(int s);
 
 		// Parent Selection //

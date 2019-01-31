@@ -1,4 +1,4 @@
-#include <iostream>
+ #include <iostream>
 #include <regex>
 #include <fstream>
 #include <string>
@@ -13,12 +13,11 @@ int main(int argc, char** argv) {
 	string line;
 	string all = "";
 	ifstream myfile(argv[1]);
-	if(myfile.is_open()) {
+	if(myfile.is_open()) { Be
 		while(getline(myfile, line)) {
 			all += line;
 		}
 	}
-
 
 	if(regex_match(all, regex("a*b*"))) {
 		cout << "Accept" << endl;

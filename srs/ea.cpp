@@ -10,10 +10,16 @@ Ea::Ea(vector<shared_ptr<Base_grammar> >& initial_population, const char* config
 	config_reader(config_file);
 
 	if(stoi(config["Population Size"]) != initial_population.size()) {
-		string s = "Incorrect population size given! " ;
-		s += to_string(initial_population.size()) + " was given, but " + config["Population Size"] + " was required.";
-		cerr << s << endl;
-		throw s;
+		if(stoi(config["Population Size"]) < initial_population.size()) {
+			while(stoi(config["Population Size"]) != initial_population.size()) {
+				initial_population.pop_back();
+			}
+		} else {
+			string s = "Incorrect population size given! " ;
+			s += to_string(initial_population.size()) + " was given, but " + config["Population Size"] + " was required.";
+			cerr << s << endl;
+			throw s;
+		}
 	}
 
 	population = initial_population;
@@ -21,9 +27,16 @@ Ea::Ea(vector<shared_ptr<Base_grammar> >& initial_population, const char* config
 }
 
 void ctrl_c_handler(int s) {
+	/*
+	cout << endl;
+	cout << "Fitness pre-abstract: " << Ea::best_grammar -> get_fitness() << endl;
+
 	for(int i = 0; i < 100; i++) {
 		Ea::best_grammar -> abstract();
 	}
+	Ea::best_grammar -> find_fitness();
+	*/
+	
 	cout << endl;
 	cout << *Ea::best_grammar << endl;
 	cout << "Fitness: " << Ea::best_grammar -> get_fitness() << endl;
@@ -49,7 +62,7 @@ void Ea::run() {
 	while(true) {
 		// Parent Selection
 		print_progress(genration, 1, "Parent Selection");
-		auto parents = parent_selection();
+		auto parents = parent_selection(stoi(config["Number of parents"]));
 
 		// Generate children
 		print_progress(genration, 2, "Generate Children");
@@ -63,7 +76,7 @@ void Ea::run() {
 		}
 
 		// Mutate
-		print_progress(genration, 4, "Mutate");
+		print_progress(genration, 4, "Mutate Population");
 		mutate(population);
 
 		// Update fitness
@@ -91,7 +104,7 @@ void Ea::print_progress(const int genration, const int step_count, const string&
 		 << " / " << (Base_grammar::words_generated_count * 100)
 		 << "\t"
 		 << step_count << " / 7 \t" << step  
-		 << "\t\t\r";
+		 << "             \t\t\t\t\t\r";
 	
 	fflush(stdout);
 }
@@ -105,11 +118,11 @@ void Ea::default_configurations() {
 	config["Samples generated per fitness evaluation"] = "10";
 }
 
-vector<shared_ptr<Base_grammar> > Ea::parent_selection() {
+vector<shared_ptr<Base_grammar> > Ea::parent_selection(const int number_to_return) {
 	if(config["Parent Selection"] == "Fitness Proportionate Selection") {
-		return fitness_proportionate_selection(stoi(config["Number of parents"]));
+		return fitness_proportionate_selection(number_to_return);
 	} else if(config["Parent Selection"] == "Tournament Selection") {
-		return tournament_selection(stoi(config["Number of parents"]));
+		return tournament_selection(number_to_return);
 	}
 
 	return {};
@@ -170,6 +183,7 @@ void Ea::update_fitness(vector<shared_ptr<Base_grammar> >& fitness_population) c
 		//person -> find_fitness();
 
 		threads.push_back(person -> find_fitness_thread());
+		//person -> find_fitness();
 
 
 
@@ -205,13 +219,13 @@ void Ea::kill_population() {
 }
 
 vector<shared_ptr<Base_grammar> > Ea::survivor_selection() {
-	return parent_selection();
+	return parent_selection(stoi(config["Population Size"]));
 }
 
 // Assumed every person in population already has fitness called
 vector<shared_ptr<Base_grammar> > Ea::fitness_proportionate_selection(const uint size) const {
 	vector<shared_ptr<Base_grammar> > selected;
-	float total_fitness;
+	float total_fitness = 0;
 
 	// Population to pick from
 	unordered_set<shared_ptr<Base_grammar> > population_to_pick_from;
@@ -222,33 +236,41 @@ vector<shared_ptr<Base_grammar> > Ea::fitness_proportionate_selection(const uint
 
 	// Get Total fitness
 	for(const auto& person : population) {
-		total_fitness = person -> get_fitness();
+		total_fitness += person -> get_fitness();
 	}
 
 	float choosen_number;
 	float running_total;
 
 	// While we need to add more
-	while(selected.size() < size) {
+	while(selected.size() < size) {		
+		// If need more to choose from, add from population
+		if(population_to_pick_from.size() < 2) {
+			for(auto& person : population) {
+				population_to_pick_from.insert(person);
+				total_fitness += person -> get_fitness();
+			}
+		}
+
 		// Reset running total
 		running_total = 0;
 		// Choose a random float between [0 - total_fitness]
-		choosen_number = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/total_fitness));
+		choosen_number = total_fitness * static_cast <float> (rand()) / (static_cast <float> (RAND_MAX));
 		// For each person
 		for(auto& person : population_to_pick_from) {
 			// Add to running total
 			running_total += person -> get_fitness();
-			// If running total is greater than choosen number
+			// If running total is greater than chosen number
 			if(choosen_number <= running_total) {
 				// They have been selected
 				selected.push_back(person);
+				// Decrement total fitness
+				total_fitness -= person -> get_fitness();
 				// Remove from possible picks
 				population_to_pick_from.erase(population_to_pick_from.find(person));
 				break;
 			}
 		}
-		// Decrement total fitness
-		total_fitness -= selected.back() -> get_fitness();
 	}
 
 	return selected;

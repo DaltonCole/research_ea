@@ -22,6 +22,8 @@ class Code_coverage {
 
 		// Accept word, output percent of code covered
 		float operator()(const string& input);
+		float operator()(const string& input, const int index);
+		float fitness_no_code_coverage(const string& input, const int index);
 
 		// Call () on a vector of inputs
 		float operator()(const vector<string>& inputs);

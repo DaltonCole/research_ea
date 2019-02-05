@@ -242,9 +242,13 @@ float Binary_map_grammar::find_fitness() {
 
 	// --- Favor smaller rules sets --- //
 	// Do this by simply subtracting the fitness by the number of rules in grammar
-	// Favors rules with multiple possibilities
-	// ex A -> aB  | cD
-	fitness -= grammar.size();
+	// Non-terminals left hand sides count as 1, rules count as .1
+	float count = grammar.size();
+	for(const auto& rules : grammar){
+		count += (0.1 * static_cast<float>(rules.second.size()));
+	}
+
+	fitness -= count;
 
 	return fitness;
 }
@@ -261,6 +265,19 @@ void Binary_map_grammar::mutate() {
 	for(auto& rules : grammar) {
 		// Delete rule
 
+		// Delete symbol
+		if(success()) {
+			// Delete single symbol in each rule with success() probability
+			// favors rules that are closer to the start
+			for(auto& rule : rules.second) {
+				if(success() && rule.size() != 0) {
+					std::swap(rule[rand() % rule.size()], rule.back());
+    				rule.pop_back();
+					break;
+				}
+			}
+		}
+
 		// Add a rule as a single non terminal or terminal
 		if(success()) {
 			rules.second.push_back({random_term()});
@@ -273,7 +290,7 @@ void Binary_map_grammar::mutate() {
 				// Throw error if bad size
 				if(grammar[a_term].size() == 0) {
 					string s = "Error in mutate! Rules size is 0! 1";
-					cerr << s << endl;
+					//cerr << s << endl;
 					//throw s;
 				} else {
 					rules.second.push_back(grammar[a_term][rand() % grammar[a_term].size()]);
@@ -287,7 +304,7 @@ void Binary_map_grammar::mutate() {
 				// Throw error if bad size
 				if(rule.size() == 0) {
 					string s = "Error in mutate! Rule size is 0! 2";
-					cerr << s << endl;
+					//cerr << s << endl;
 					//throw s;
 				} else {
 					rule.insert(rule.begin() + (rand() % rule.size()), random_term()); // NOTE: CAN CAUSE GRAMMAR TO NEVER END
@@ -316,13 +333,13 @@ uint32_t Binary_map_grammar::random_term() const {
 // Abstract out terminals (ex p = [a-z])
 void Binary_map_grammar::abstract() {
 	if(success()) { // NOTE: Might make absolute instead of probabilistic
-		//eliminate_dead_rules();
+		eliminate_dead_rules();
 	}
-	if(1) {
+	if(success()) {
 		condense_repetition();
 	}
 	// Remove rules that only contain an epsilon
-	if(1) {
+	if(success()) {
 		remove_rules_only_containing_epsilon();
 	}
 }

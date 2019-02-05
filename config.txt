@@ -1,7 +1,7 @@
 # Config file
 
 # Size of population
-Population Size: 100
+Population Size: 10
 
 # Parent Selection Method
 #	Can be either:
@@ -12,10 +12,10 @@ Parent Selection: Fitness Proportionate Selection
 # Number of parents for parent selection
 #	Must be less than population size
 #	Need at least two parents
-Number of parents: 50
+Number of parents: 5
 
 # Number of children
-Number of children: 50
+Number of children: 5
 
 # Mutation Rate
 #	Float between 0 and 1

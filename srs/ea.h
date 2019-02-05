@@ -32,7 +32,7 @@ class Ea {
 		friend void ctrl_c_handler(int s);
 
 		// Parent Selection //
-		vector<shared_ptr<Base_grammar> > parent_selection();
+		vector<shared_ptr<Base_grammar> > parent_selection(const int number_to_return);
 		//////////////////////
 
 		// Children //

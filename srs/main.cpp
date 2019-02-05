@@ -65,13 +65,23 @@ int main(int argc, char *argv[]) {
 
 	while(inputs.size() < 100) {
 		string s = "";
-
+		///*
 		for(int i = 0; i < rand() % 100; i++) {
 			s += "a";
 		}
 		for(int i = 0; i < rand() % 100; i++) {
 			s += "b";
 		}
+		//*/
+		/*
+		// aaabbb
+		for(int i = 0; i < 3; i++) {
+			s += "a";
+		}
+		for(int i = 0; i < 3; i++) {
+			s += "b";
+		}
+		*/
 
 		inputs.push_back(s);
 	}

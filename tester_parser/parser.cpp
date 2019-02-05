@@ -13,17 +13,27 @@ int main(int argc, char** argv) {
 	string line;
 	string all = "";
 	ifstream myfile(argv[1]);
-	if(myfile.is_open()) { Be
+	if(myfile.is_open()) {
 		while(getline(myfile, line)) {
 			all += line;
 		}
 	}
 
+	/*
+	if(all == "aaabbb") {
+		cout << "Accept" << endl;
+	} else {
+		cout << "Line" << endl;
+	}
+	*/
+
+	
 	if(regex_match(all, regex("a*b*"))) {
 		cout << "Accept" << endl;
 	} else {
 		cout << "Line" << endl;
 	}
+	
 
 	return 0;
 }

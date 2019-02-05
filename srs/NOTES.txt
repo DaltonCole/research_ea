@@ -5,3 +5,6 @@ S -> aQ
 Q -> aR
 ...
 Try to condense to S -> aS | aR
+
+
+Getting a seg fault in kill

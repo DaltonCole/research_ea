@@ -76,16 +76,45 @@ void Code_coverage::clean_up() {
 	directory_index = 0;
 }
 
-
 float Code_coverage::operator()(const string& input) {
 	int index = get_index();
+	return (*this)(input, index);
+}
 
+float Code_coverage::fitness_no_code_coverage(const string& input, const int index) {
+	// HAVE THIS BE MORE ABSTRACT //
+	string command = "/home/drc/Desktop/Research/ea/tester_parser/mipl_parser "
+	+ tmp_directory + to_string(index) + ".txt";
+	////////////////////////////////
+
+	// Make tmp file for input
+	ofstream input_file(tmp_directory + to_string(index) + ".txt");
+	if(input_file.is_open()) {
+		input_file << input;
+		input_file.close();
+	} else {
+		string s = "File \"" + tmp_directory + to_string(index) + ".txt" + "\" did not open!";
+		cerr << s << endl;
+		throw s;
+	}
+
+	// Make sure no error occured while parsing
+	if(valid_input(exec(command))) {
+		return 1.0;
+	}
+
+	// If invalid input, subtract 1 from fitness
+	return -1.0;
+}
+
+
+float Code_coverage::operator()(const string& input, const int index) {
 	// NOTE: HAVE THIS MORE ABSTRACT //
 	string kcov_command = "kcov " + tmp_directory + to_string(index) 
 	+ " /home/drc/Desktop/CS5500/HW3/mipl_parser "
 	+ tmp_directory + to_string(index) + ".txt";
 
-	kcov_command  = "kcov " + tmp_directory + to_string(index) 
+	kcov_command = "kcov " + tmp_directory + to_string(index) 
 	+ " /home/drc/Desktop/Research/ea/tester_parser/mipl_parser "
 	+ tmp_directory + to_string(index) + ".txt";
 	///////////////////////////////////
@@ -130,6 +159,26 @@ float Code_coverage::operator()(const string& input) {
 	return -1.0;
 }
 
+
+
+float Code_coverage::operator()(const vector<string>& inputs) {
+	float total = 0.0;
+	int index = get_index();
+
+	for(uint i = 0; i < inputs.size(); i++) {
+		try {
+			total += (*this)(inputs[i], index);
+			//total += fitness_no_code_coverage(inputs[i], index);
+		} catch(string e) {
+			cout << e << endl;
+		}
+	}
+
+	return total;
+}
+
+/*
+// Async version
 float Code_coverage::operator()(const vector<string>& inputs) {
 	float total = 0.0;
 
@@ -150,7 +199,7 @@ float Code_coverage::operator()(const vector<string>& inputs) {
 
 	return total;
 }
-
+*/
 
 float Code_coverage::parse_json_line_containing_code_coverage(const string& input) const {
 	string coverage = "";

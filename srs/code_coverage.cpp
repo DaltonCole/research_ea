@@ -1,8 +1,12 @@
 #include "code_coverage.h"
 
 const string Code_coverage::tmp_directory = "/tmp/kcov_temp_code_coverage/";
-// Is ".8159829a7e16cfa9" always constant?
-const string Code_coverage::kcov_saved_path = "/mipl_parser/coverage.json";
+
+string Code_coverage::kcov_saved_path = "";
+
+string Code_coverage::executable = "";
+
+bool Code_coverage::kcov_or_bool = true;
 
 int Code_coverage::directory_index = 0;
 std::mutex Code_coverage::mtx;
@@ -82,10 +86,8 @@ float Code_coverage::operator()(const string& input) {
 }
 
 float Code_coverage::fitness_no_code_coverage(const string& input, const int index) {
-	// HAVE THIS BE MORE ABSTRACT //
-	string command = "/home/drc/Desktop/Research/ea/tester_parser/mipl_parser "
-	+ tmp_directory + to_string(index) + ".txt";
-	////////////////////////////////
+	// System command to run
+	string command = Code_coverage::executable + " " + tmp_directory + to_string(index) + ".txt";
 
 	// Make tmp file for input
 	ofstream input_file(tmp_directory + to_string(index) + ".txt");
@@ -100,24 +102,18 @@ float Code_coverage::fitness_no_code_coverage(const string& input, const int ind
 
 	// Make sure no error occured while parsing
 	if(valid_input(exec(command))) {
-		return 1.0;
+		return 100.0;
 	}
 
 	// If invalid input, subtract 1 from fitness
-	return -1.0;
+	return -100.0;
 }
 
 
 float Code_coverage::operator()(const string& input, const int index) {
-	// NOTE: HAVE THIS MORE ABSTRACT //
 	string kcov_command = "kcov " + tmp_directory + to_string(index) 
-	+ " /home/drc/Desktop/CS5500/HW3/mipl_parser "
+	+ " " + Code_coverage::executable + " "
 	+ tmp_directory + to_string(index) + ".txt";
-
-	kcov_command = "kcov " + tmp_directory + to_string(index) 
-	+ " /home/drc/Desktop/Research/ea/tester_parser/mipl_parser "
-	+ tmp_directory + to_string(index) + ".txt";
-	///////////////////////////////////
 
 	// Make tmp file for input
 	ofstream input_file(tmp_directory + to_string(index) + ".txt");
@@ -133,7 +129,7 @@ float Code_coverage::operator()(const string& input, const int index) {
 	// Make sure no error occured while parsing
 	if(valid_input(exec(kcov_command))) {
 		// Find code coverage in JSON file
-		ifstream infile(tmp_directory + to_string(index) + kcov_saved_path);
+		ifstream infile(tmp_directory + to_string(index) + "/" + kcov_saved_path + "/coverage.json");
 
 		if(infile.is_open()) {
 			string line;
@@ -149,7 +145,7 @@ float Code_coverage::operator()(const string& input, const int index) {
 			}
 			infile.close();
 		} else {
-			string s = "File \"" + tmp_directory + to_string(index) + kcov_saved_path + "\" did not open!";
+			string s = "File \"" + tmp_directory + to_string(index) + kcov_saved_path + "/coverage.json" + "\" did not open!";
 			cerr << s << endl;
 			throw s;
 		}
@@ -167,8 +163,11 @@ float Code_coverage::operator()(const vector<string>& inputs) {
 
 	for(uint i = 0; i < inputs.size(); i++) {
 		try {
-			total += (*this)(inputs[i], index);
-			//total += fitness_no_code_coverage(inputs[i], index);
+			if(Code_coverage::kcov_or_bool == true) {
+				total += (*this)(inputs[i], index);
+			} else {
+				total += fitness_no_code_coverage(inputs[i], index);
+			}
 		} catch(string e) {
 			cout << e << endl;
 		}

@@ -1,5 +1,21 @@
 # Config file
 
+# Code coverage percentage or binary valid
+#	Can be either:
+#		"true", will use code coverage percentage
+#		"false", based on valid input, not code coverage
+Kcov: true
+
+# Executable
+Executable: /home/drc/Desktop/Research/ea/tester_parser/mipl_parser
+
+# Sample file directory
+Sample file directory: 
+#/home/drc/Desktop/Research/ea/json/
+
+# Invalid strings, space delimited
+Invalid Strings: Invalid Line
+
 # Size of population
 Population Size: 10
 
@@ -7,7 +23,7 @@ Population Size: 10
 #	Can be either:
 #		* "Fitness Proportionate Selection"
 #		* "Tournament Selection"
-Parent Selection: Fitness Proportionate Selection
+Parent Selection: Tournament Selection
 
 # Number of parents for parent selection
 #	Must be less than population size
@@ -20,7 +36,7 @@ Number of children: 5
 # Mutation Rate
 #	Float between 0 and 1
 #	Defaults to 0.01
-Mutation rate: 0.2
+Mutation rate: 0.4
 
 # Number of samples to generate
 #	Defaults to 10

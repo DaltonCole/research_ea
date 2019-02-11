@@ -38,6 +38,10 @@ class Code_coverage {
 		int get_index();
 		static void clean_up();
 
+		static string executable;
+		static bool kcov_or_bool;
+		static string kcov_saved_path;
+
 	private:
 		string command_to_run;
 		vector<string> valid_outputs;
@@ -46,7 +50,6 @@ class Code_coverage {
 		string exec(const string& cmd) const;
 
 		static const string tmp_directory;
-		static const string kcov_saved_path;
 
 		static int directory_index;
 		static std::mutex mtx;

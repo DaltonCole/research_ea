@@ -31,7 +31,7 @@ int main(int argc, char** argv) {
 	if(regex_match(all, regex("a*b*"))) {
 		cout << "Accept" << endl;
 	} else {
-		cout << "Line" << endl;
+		cout << "Invalid Line" << endl;
 	}
 	
 

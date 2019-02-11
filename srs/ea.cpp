@@ -5,13 +5,51 @@ shared_ptr<Base_grammar> Ea::best_grammar = nullptr;
 Ea::Ea() {
 }
 
+vector<shared_ptr<Base_grammar> > Ea::generate_population
+(shared_ptr<Base_grammar> (*create_pop) (void)) {
+	vector<shared_ptr<Base_grammar> > initial_population;
+
+	if(config[("Sample file directory")] != "") {
+
+	} else {
+		for(uint i = 0; i < static_cast<uint>(stoi(config["Population Size"])); i++) {
+			initial_population.push_back((*create_pop)());
+		}
+	}
+
+	return initial_population;
+}
+
+Ea::Ea(shared_ptr<Base_grammar> (*create_pop) (void), const char* config_file) {
+	default_configurations();
+	config_reader(config_file);
+
+	vector<shared_ptr<Base_grammar> > initial_population = generate_population(create_pop);
+
+	if(static_cast<uint>(stoi(config["Population Size"])) != initial_population.size()) {
+		if(static_cast<uint>(stoi(config["Population Size"])) < initial_population.size()) {
+			while(static_cast<uint>(stoi(config["Population Size"])) != initial_population.size()) {
+				initial_population.pop_back();
+			}
+		} else {
+			string s = "Incorrect population size given! " ;
+			s += to_string(initial_population.size()) + " was given, but " + config["Population Size"] + " was required.";
+			cerr << s << endl;
+			throw s;
+		}
+	}
+
+	population = initial_population;
+	best_grammar = population[0] -> clone();
+}
+
 Ea::Ea(vector<shared_ptr<Base_grammar> >& initial_population, const char* config_file) {
 	default_configurations();
 	config_reader(config_file);
 
-	if(stoi(config["Population Size"]) != initial_population.size()) {
-		if(stoi(config["Population Size"]) < initial_population.size()) {
-			while(stoi(config["Population Size"]) != initial_population.size()) {
+	if(static_cast<uint>(stoi(config["Population Size"])) != initial_population.size()) {
+		if(static_cast<uint>(stoi(config["Population Size"])) < initial_population.size()) {
+			while(static_cast<uint>(stoi(config["Population Size"])) != initial_population.size()) {
 				initial_population.pop_back();
 			}
 		} else {
@@ -27,6 +65,8 @@ Ea::Ea(vector<shared_ptr<Base_grammar> >& initial_population, const char* config
 }
 
 void ctrl_c_handler(int s) {
+	// Ignore unused variable warning
+	(void)s;
 	/*
 	cout << endl;
 	cout << "Fitness pre-abstract: " << Ea::best_grammar -> get_fitness() << endl;
@@ -62,7 +102,7 @@ void Ea::run() {
 	while(true) {
 		// Parent Selection
 		print_progress(genration, 1, "Parent Selection");
-		auto parents = parent_selection(stoi(config["Number of parents"]));
+		auto parents = parent_selection(static_cast<uint>(stoi(config["Number of parents"])));
 
 		// Generate children
 		print_progress(genration, 2, "Generate Children");
@@ -116,6 +156,13 @@ void Ea::default_configurations() {
 	config["Number of children"] = "50";
 	config["Mutation rate"] = "0.01";
 	config["Samples generated per fitness evaluation"] = "10";
+
+	config["Kcov"] = "false";
+	config["Executable"] = "/home/drc/Desktop/Research/ea/tester_parser/mipl_parser";
+	config["Sample file directory"] = "/home/drc/Desktop/Research/ea/json/";
+	/*
+	config[""] = ;
+	*/
 }
 
 vector<shared_ptr<Base_grammar> > Ea::parent_selection(const int number_to_return) {
@@ -143,7 +190,7 @@ vector<shared_ptr<Base_grammar> > Ea::generate_children
 		parents_to_choose_from.insert(par);
 	}
 
-	while(children.size() < stoi(config["Number of children"])) {
+	while(children.size() < static_cast<uint>(stoi(config["Number of children"]))) {
 		// Shuffle in all possible parents if we need more options
 		if(parents_to_choose_from.size() < 2) {
 			for(const auto& par : parents) {
@@ -219,13 +266,15 @@ void Ea::kill_population() {
 }
 
 vector<shared_ptr<Base_grammar> > Ea::survivor_selection() {
-	return parent_selection(stoi(config["Population Size"]));
+	return parent_selection(static_cast<uint>(stoi(config["Population Size"])));
 }
 
 // Assumed every person in population already has fitness called
+// NOTE: GETS STUCK SOMETIMES
 vector<shared_ptr<Base_grammar> > Ea::fitness_proportionate_selection(const uint size) const {
 	vector<shared_ptr<Base_grammar> > selected;
 	float total_fitness = 0;
+	float minimum_fitness = 0;
 
 	// Population to pick from
 	unordered_set<shared_ptr<Base_grammar> > population_to_pick_from;
@@ -234,16 +283,21 @@ vector<shared_ptr<Base_grammar> > Ea::fitness_proportionate_selection(const uint
 		population_to_pick_from.insert(person);
 	}
 
+	// Get minimum fitness
+	for(const auto& person : population) {
+		minimum_fitness = min(person -> get_fitness(), minimum_fitness);
+	}
+
 	// Get Total fitness
 	for(const auto& person : population) {
-		total_fitness += person -> get_fitness();
+		total_fitness += (person -> get_fitness() - minimum_fitness);
 	}
 
 	float choosen_number;
 	float running_total;
 
 	// While we need to add more
-	while(selected.size() < size) {		
+	while(selected.size() < size) {	
 		// If need more to choose from, add from population
 		if(population_to_pick_from.size() < 2) {
 			for(auto& person : population) {
@@ -254,12 +308,13 @@ vector<shared_ptr<Base_grammar> > Ea::fitness_proportionate_selection(const uint
 
 		// Reset running total
 		running_total = 0;
-		// Choose a random float between [0 - total_fitness]
+		// Choose a random float between [0 - absolute_fitness]
 		choosen_number = total_fitness * static_cast <float> (rand()) / (static_cast <float> (RAND_MAX));
+
 		// For each person
 		for(auto& person : population_to_pick_from) {
 			// Add to running total
-			running_total += person -> get_fitness();
+			running_total += (person -> get_fitness() - minimum_fitness);
 			// If running total is greater than chosen number
 			if(choosen_number <= running_total) {
 				// They have been selected
@@ -345,7 +400,7 @@ void Ea::config_reader(const char* config_file) {
 
 	// Update static necessary static variables
 	Base_grammar::mutate_rate = stof(config["Mutation rate"]);
-	Base_grammar::words_generated_count = stoi(config["Samples generated per fitness evaluation"]);
+	Base_grammar::words_generated_count = static_cast<uint>(stoi(config["Samples generated per fitness evaluation"]));
 
 	config_checker();
 }
@@ -379,8 +434,29 @@ void Ea::config_reader_helper(const string& key, const string& line) {
 	config[key] = value;
 }
 
-void Ea::config_checker() const {
+void Ea::config_checker() {
+	if(config.find("Kcov") != config.end()) {
+		if(config["Kcov"] == "True" || config["Kcov"] == "true") {
+			Code_coverage::kcov_or_bool = true;
+		} else {
+			Code_coverage::kcov_or_bool = false;
+		}
+	}
 
+	if(config.find("Executable") != config.end()) {
+		Code_coverage::executable = config["Executable"];
+
+		string executable_name = "";
+		for(const auto& c : config["Executable"]) {
+			if(c == '/') {
+				executable_name = "";
+			} else {
+				executable_name += c;
+			}
+		}
+
+		Code_coverage::kcov_saved_path = executable_name;
+	}	
 }
 
 shared_ptr<Base_grammar> Ea::random_grammar_from_unordered_set(const unordered_set<shared_ptr<Base_grammar> > options) const {

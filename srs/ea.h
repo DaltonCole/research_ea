@@ -23,7 +23,10 @@ using namespace std;
 class Ea {
 	public:
 		Ea();
+		Ea(shared_ptr<Base_grammar> (*create_pop) (void), const char* config_file);
 		Ea(vector<shared_ptr<Base_grammar> >& initial_population, const char* config_file);
+
+		vector<shared_ptr<Base_grammar> > generate_population(shared_ptr<Base_grammar> (*create_pop) (void));
 
 
 		void run();
@@ -61,7 +64,7 @@ class Ea {
 		void default_configurations();
 		void config_reader(const char* config_file);
 		void config_reader_helper(const string& key, const string& line);
-		void config_checker() const;
+		void config_checker();
 		///////////////////
 
 		// Helper Functions //

@@ -1,7 +1,6 @@
- #include <iostream>
-#include <regex>
+#include <iostream>
 #include <fstream>
-#include <string>
+
 using namespace std;
 
 int main(int argc, char** argv) {
@@ -19,6 +18,24 @@ int main(int argc, char** argv) {
 		}
 	}
 
+	bool at_b = false;
+	for(const auto& c : all) {
+		if(c == 'a' || c == 'b') {
+			if(at_b == true && c == 'a') {
+				cout << "Invalid Line" << endl;
+				return 0;
+			}
+			if(c == 'b') {
+				at_b = true;
+			}
+		} else {
+			cout << "Invalid Line" << endl;
+			return 0;
+		}
+	}
+
+	cout << "Accept" << endl;
+
 	/*
 	if(all == "aaabbb") {
 		cout << "Accept" << endl;
@@ -26,13 +43,6 @@ int main(int argc, char** argv) {
 		cout << "Line" << endl;
 	}
 	*/
-
-	
-	if(regex_match(all, regex("a*b*"))) {
-		cout << "Accept" << endl;
-	} else {
-		cout << "Invalid Line" << endl;
-	}
 	
 
 	return 0;

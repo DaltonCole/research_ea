@@ -145,7 +145,7 @@ float Code_coverage::operator()(const string& input, const int index) {
 			}
 			infile.close();
 		} else {
-			string s = "File \"" + tmp_directory + to_string(index) + kcov_saved_path + "/coverage.json" + "\" did not open!";
+			string s = "File \"" + tmp_directory + to_string(index) + "/" + kcov_saved_path + "/coverage.json" + "\" did not open!";
 			cerr << s << endl;
 			throw s;
 		}

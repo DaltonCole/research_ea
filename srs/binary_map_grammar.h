@@ -44,6 +44,7 @@ class Binary_map_grammar : public Base_grammar {
 		// --- Abstract helpers ---
 		void condense_repetition();
 		void remove_rules_only_containing_epsilon();
+		void remove_rules_only_containing_a_non_terminal();
 
 		void eliminate_dead_rules();
 		void eliminate_dead_rules_helper

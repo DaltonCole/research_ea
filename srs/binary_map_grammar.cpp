@@ -176,7 +176,7 @@ vector<string> Binary_map_grammar::generate_strings() {
 	string word;
 	int failed_attempts = 0;
 
-	while(words.size() < words_generated_count && failed_attempts < max_failed_attempts) {
+	while(static_cast<uint>(words.size()) < words_generated_count && failed_attempts < max_failed_attempts) {
 		word = generate_string(grammar[start_symbol], 0);
 
 		if(max_depth_reached == true) {
@@ -234,6 +234,7 @@ float Binary_map_grammar::find_fitness() {
 
 	vector<string> samples = generate_strings();
 
+	// Decrease possible fitness for repeated strings
 	sort(samples.begin(), samples.end());
 	auto it = unique(samples.begin(), samples.end());
 	samples.resize(std::distance(samples.begin(), it));
@@ -246,6 +247,7 @@ float Binary_map_grammar::find_fitness() {
 	float count = grammar.size();
 	for(const auto& rules : grammar){
 		count += (0.1 * static_cast<float>(rules.second.size()));
+		count += 1;
 	}
 
 	fitness -= count;
@@ -339,8 +341,9 @@ void Binary_map_grammar::abstract() {
 		condense_repetition();
 	}
 	// Remove rules that only contain an epsilon
-	if(success()) {
+	if(success() || true) {
 		remove_rules_only_containing_epsilon();
+		remove_rules_only_containing_a_non_terminal();
 	}
 }
 
@@ -451,6 +454,39 @@ void Binary_map_grammar::remove_rules_only_containing_epsilon() {
 		for(auto& rule : gram.second) {
 			for(const auto& ep_rule : epsilon_rules) {
 				rule.erase(remove(rule.begin(), rule.end(), ep_rule), rule.end());
+			}
+		}
+	}
+}
+
+void Binary_map_grammar::remove_rules_only_containing_a_non_terminal() {
+	// First = rule being replaced, second = rule to replace with
+	unordered_map<uint32_t, uint32_t> only_non_term_rules;
+
+	// Find rules only containing a single non-terminal
+	for(const auto& gram : grammar) {
+		if(gram.second.size() == 1 && gram.second[0].size() == 1) {
+			// If non-terminal
+			if(grammar.find(gram.second[0][0]) != grammar.end()) {
+				// Add to remove list
+				only_non_term_rules[gram.first] = gram.second[0][0];
+			}
+		}
+	}
+
+	// Remove replaced rules from grammar
+	for(const auto& non_term : only_non_term_rules) {
+		grammar.erase(non_term.first);
+	}
+
+	for(auto& gram : grammar) {
+		for(auto& rule : gram.second) {
+			for(auto& symbol : rule) {
+				for(const auto& non_term : only_non_term_rules) {
+					if(symbol == non_term.first) {
+						symbol = non_term.second;
+					}
+				}
 			}
 		}
 	}

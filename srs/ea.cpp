@@ -5,21 +5,6 @@ shared_ptr<Base_grammar> Ea::best_grammar = nullptr;
 Ea::Ea() {
 }
 
-vector<shared_ptr<Base_grammar> > Ea::generate_population
-(shared_ptr<Base_grammar> (*create_pop) (void)) {
-	vector<shared_ptr<Base_grammar> > initial_population;
-
-	if(config[("Sample file directory")] != "") {
-
-	} else {
-		for(uint i = 0; i < static_cast<uint>(stoi(config["Population Size"])); i++) {
-			initial_population.push_back((*create_pop)());
-		}
-	}
-
-	return initial_population;
-}
-
 Ea::Ea(shared_ptr<Base_grammar> (*create_pop) (void), const char* config_file) {
 	default_configurations();
 	config_reader(config_file);
@@ -81,6 +66,27 @@ void ctrl_c_handler(int s) {
 	cout << *Ea::best_grammar << endl;
 	cout << "Fitness: " << Ea::best_grammar -> get_fitness() << endl;
 	exit(1);
+}
+
+vector<shared_ptr<Base_grammar> > Ea::generate_population
+(shared_ptr<Base_grammar> (*create_pop) (void)) {
+	vector<shared_ptr<Base_grammar> > initial_population;
+
+	if(config[("Sample file directory")] != "") {
+		for(auto& path : std::experimental::filesystem::directory_iterator(config[("Sample file directory")])) {
+			std::ifstream t(path.path());
+			std::stringstream buffer;
+			buffer << t.rdbuf();
+
+			initial_population.emplace_back(new Binary_map_grammar(buffer.str()));
+		}
+	} else {
+		for(uint i = 0; i < static_cast<uint>(stoi(config["Population Size"])); i++) {
+			initial_population.push_back((*create_pop)());
+		}
+	}
+
+	return initial_population;
 }
 
 void Ea::run() {

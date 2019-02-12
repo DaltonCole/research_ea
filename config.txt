@@ -4,20 +4,20 @@
 #	Can be either:
 #		"true", will use code coverage percentage
 #		"false", based on valid input, not code coverage
-Kcov: true
+Kcov: false
 
 # Executable
 Executable: /home/drc/Desktop/Research/ea/tester_parser/mipl_parser
 
 # Sample file directory
-Sample file directory: 
+Sample file directory: /home/drc/Desktop/Research/ea/tester_parser/samples/
 #/home/drc/Desktop/Research/ea/json/
 
 # Invalid strings, space delimited
 Invalid Strings: Invalid Line
 
 # Size of population
-Population Size: 10
+Population Size: 100
 
 # Parent Selection Method
 #	Can be either:
@@ -28,10 +28,10 @@ Parent Selection: Tournament Selection
 # Number of parents for parent selection
 #	Must be less than population size
 #	Need at least two parents
-Number of parents: 5
+Number of parents: 50
 
 # Number of children
-Number of children: 5
+Number of children: 50
 
 # Mutation Rate
 #	Float between 0 and 1
@@ -40,4 +40,4 @@ Mutation rate: 0.4
 
 # Number of samples to generate
 #	Defaults to 10
-Samples generated per fitness evaluation: 10
+Samples generated per fitness evaluation: 100

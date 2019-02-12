@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <thread>
 #include <future>
+#include <experimental/filesystem>
 // sigaction //
 #include <signal.h>
 #include <stdlib.h>
@@ -18,6 +19,7 @@
 ///////////////
 #include "base_grammar.h"
 #include "code_coverage.h"
+#include "binary_map_grammar.h"
 using namespace std;
 
 class Ea {
@@ -72,8 +74,8 @@ class Ea {
 		random_grammar_from_unordered_set(const unordered_set<shared_ptr<Base_grammar> > options) const;
 		//////////////////////
 
-	private:
 		static shared_ptr<Base_grammar> best_grammar;
+	private:
 		unordered_map<string, string> config;
 		vector<shared_ptr<Base_grammar> > population;
 };

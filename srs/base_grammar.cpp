@@ -1,7 +1,7 @@
 #include "base_grammar.h"
 
 int Base_grammar::words_generated_count = 10;
-float Base_grammar::mutate_rate = 1;//0.1; // NOTE: change
+float Base_grammar::mutate_rate = 0.1;//0.1; // NOTE: change
 
 bool Base_grammar::success() const {
 	if((static_cast <float> (rand()) / static_cast <float> (RAND_MAX)) < mutate_rate) {

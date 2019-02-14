@@ -58,7 +58,6 @@ class Binary_map_grammar : public Base_grammar {
 
 	private:
 		unordered_map<uint32_t, vector<vector<uint32_t> > > grammar;
-		float fitness;
 		bool max_depth_reached;
 
 		// NOTE: Might pre-compute this so minor binary changes correlate to minor ascii changes

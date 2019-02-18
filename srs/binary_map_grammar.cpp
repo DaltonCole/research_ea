@@ -7,7 +7,7 @@ const uint32_t Binary_map_grammar::start_symbol = 0;
 int Binary_map_grammar::max_string_depth = 100;
 int Binary_map_grammar::max_failed_attempts = 100;
 
-// NOTE: NEED TO ADD THESE binary_to_regex_mapping
+// These are added to binary_to_regex_mapping upon construction
 const vector<Dfa> Binary_map_grammar::common_patterns = {
 	// Single characters
 	Dfa("[A-Z]"), // Any capital letters
@@ -42,6 +42,7 @@ const vector<Dfa> Binary_map_grammar::common_patterns = {
 	Dfa("[0-9A-Za-z_*]") // alpha-numeric
 
 	// NOTE: Should add hex, _ stuff, binary, base64, char with newline and tab (white space)
+	// Add single characters 
 };
 
 Binary_map_grammar::Binary_map_grammar() {

@@ -1,18 +1,16 @@
 #include "code_coverage.h"
 
+// --- Initalize static variables --- //
 const string Code_coverage::tmp_directory = "/tmp/kcov_temp_code_coverage/";
-
 string Code_coverage::kcov_saved_path = "";
-
 string Code_coverage::executable = "";
-
 bool Code_coverage::kcov_or_bool = true;
-
 int Code_coverage::directory_index = 0;
 std::mutex Code_coverage::mtx;
-
 vector<string> Code_coverage::valid_strings;
 vector<string> Code_coverage::invalid_strings;
+////////////////////////////////////////
+
 
 Code_coverage::Code_coverage() {
 	// Generate tmp directory
@@ -145,30 +143,6 @@ float Code_coverage::fitness_no_code_coverage(const string& input, const int ind
 	// If invalid input, subtract 1 from fitness
 	return -100.0;
 }
-
-/*
-// Async version
-float Code_coverage::operator()(const vector<string>& inputs) {
-	float total = 0.0;
-
-	// Async threads
-	vector<future<float> > threads;
-	for(uint i = 0; i < inputs.size(); i++) {
-		try {
-			threads.push_back(async((*this), inputs[i]));
-		} catch(string e) {
-			cout << e << endl;
-		}
-	}
-
-	// Join threads, keep track of total
-	for(auto& th : threads) {
-		total += th.get();
-	}
-
-	return total;
-}
-*/
 
 float Code_coverage::parse_json_line_containing_code_coverage(const string& input) const {
 	string coverage = "";

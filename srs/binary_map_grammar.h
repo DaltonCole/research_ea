@@ -100,7 +100,7 @@ class Binary_map_grammar : public Base_grammar {
 		//////////////////////////////////////////////////////////////////////
 		uint32_t random_term() const;
 
-		virtual void abstract();
+		virtual void abstract(const bool guarantee_abstract = false);
 
 		// --- Abstract helpers --- //
 		//////////////////////////////////////////////////////////////////////
@@ -175,21 +175,18 @@ class Binary_map_grammar : public Base_grammar {
 								///< goes with what mapping
 		static unordered_map<uint32_t, Dfa> 
 		binary_to_regex_mapping;	///< Mapping of uint32_t symbol to corresponding regex
-		static uint32_t next_available_mapping;
+		static uint32_t next_available_mapping;	///< Next symbol to use.
+												///< Incremented any time a new symbol is generated.
 
-		// Common regular expressions
 		static const vector<Dfa> common_patterns;	///< Pre-computed common regular expressions
 
-		// Start symbol
 		static const uint32_t start_symbol;	///< The start symbol for the grammar. Will 
 											///< generally be 0.
 
-		// Max depth for a single rule
 		static int max_string_depth;	///< Max recursive depth to generate sample
 										///< strings from.
 		bool max_depth_reached;	///< If max string depth was reached
 
-		// Number of failed attempts allowed when generating a string
 		static int max_failed_attempts; 	///< Attempt to generate a string this many times
 											///< before giving up. If we give up, then the max
 											///< fitness is reduced since we have fewer

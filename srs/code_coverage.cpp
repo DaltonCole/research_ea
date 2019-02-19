@@ -11,10 +11,10 @@ bool Code_coverage::kcov_or_bool = true;
 int Code_coverage::directory_index = 0;
 std::mutex Code_coverage::mtx;
 
+vector<string> Code_coverage::valid_strings;
+vector<string> Code_coverage::invalid_strings;
+
 Code_coverage::Code_coverage() {
-	valid_outputs = {};
-	invalid_outputs = {"Line"};
-
 	// Generate tmp directory
 	string dir_command = "mkdir -p " + tmp_directory;
 	const int dir_err = system(dir_command.c_str());
@@ -23,33 +23,6 @@ Code_coverage::Code_coverage() {
 		cerr << s << endl;
 		throw s;
 	}
-}
-
-Code_coverage::Code_coverage(const string& command, const vector<string>& valid, const vector<string>& invalid) {
-	command_to_run = command;
-	valid_outputs = valid;
-	invalid_outputs = invalid;
-
-	// Generate tmp directory
-	string dir_command = "mkdir -p " + tmp_directory;
-	const int dir_err = system(dir_command.c_str());
-	if(dir_err == -1) {
-		string s = "Directory " + tmp_directory + " was not created!";
-		cerr << s << endl;
-		throw s;
-	}
-}
-
-// NOTE: need to clean up after () finishes
-Code_coverage::~Code_coverage() {
-	// Delete tmp directory
-	string command = "rm -r " + tmp_directory;
-	//const int dir_err = system(command.c_str());
-	/*
-	if(dir_err == -1) {
-		throw "Directory " + tmp_directory + " was not deleted!";
-	}
-	*/
 }
 
 int Code_coverage::get_index() {
@@ -64,11 +37,6 @@ int Code_coverage::get_index() {
 // Called after all code_coverage runs are finished in ea.cpp
 // Removes tmp directories
 void Code_coverage::clean_up() {
-	/*
-	for(int i = 0; i < directory_index; i++) {
-
-	}
-	*/
 	// Delete tmp directory
 	string command = "rm -r " + tmp_directory;
 	const int dir_err = system(command.c_str());
@@ -77,38 +45,16 @@ void Code_coverage::clean_up() {
 		throw "Directory " + tmp_directory + " was not deleted!";
 	}
 
+	// Reset directory index
+	Code_coverage::mtx.lock();
 	directory_index = 0;
+	Code_coverage::mtx.unlock();
 }
 
 float Code_coverage::operator()(const string& input) {
 	int index = get_index();
 	return (*this)(input, index);
 }
-
-float Code_coverage::fitness_no_code_coverage(const string& input, const int index) {
-	// System command to run
-	string command = Code_coverage::executable + " " + tmp_directory + to_string(index) + ".txt";
-
-	// Make tmp file for input
-	ofstream input_file(tmp_directory + to_string(index) + ".txt");
-	if(input_file.is_open()) {
-		input_file << input;
-		input_file.close();
-	} else {
-		string s = "File \"" + tmp_directory + to_string(index) + ".txt" + "\" did not open!";
-		cerr << s << endl;
-		throw s;
-	}
-
-	// Make sure no error occured while parsing
-	if(valid_input(exec(command))) {
-		return 100.0;
-	}
-
-	// If invalid input, subtract 1 from fitness
-	return -100.0;
-}
-
 
 float Code_coverage::operator()(const string& input, const int index) {
 	string kcov_command = "kcov " + tmp_directory + to_string(index) 
@@ -151,8 +97,8 @@ float Code_coverage::operator()(const string& input, const int index) {
 		}
 	}
 
-	// If invalid input, subtract 1 from fitness
-	return -1.0;
+	// If invalid input, subtract fitness
+	return -100.0;
 }
 
 
@@ -174,6 +120,30 @@ float Code_coverage::operator()(const vector<string>& inputs) {
 	}
 
 	return total;
+}
+
+float Code_coverage::fitness_no_code_coverage(const string& input, const int index) {
+	// System command to run
+	string command = Code_coverage::executable + " " + tmp_directory + to_string(index) + ".txt";
+
+	// Make tmp file for input
+	ofstream input_file(tmp_directory + to_string(index) + ".txt");
+	if(input_file.is_open()) {
+		input_file << input;
+		input_file.close();
+	} else {
+		string s = "File \"" + tmp_directory + to_string(index) + ".txt" + "\" did not open!";
+		cerr << s << endl;
+		throw s;
+	}
+
+	// Make sure no error occured while parsing
+	if(valid_input(exec(command))) {
+		return 100.0;
+	}
+
+	// If invalid input, subtract 1 from fitness
+	return -100.0;
 }
 
 /*
@@ -227,11 +197,23 @@ std::string Code_coverage::exec(const string& cmd) const {
 
     return result;
 }
-// /tmp/thing/mipl_parser.8159829a7e16cfa9/coverage.json:  "percent_covered": "55.30",
 
-// NOTE: not checking valid_outputs
 bool Code_coverage::valid_input(const string& input) const {
-	for(auto invalid : invalid_outputs) {
+	// If we are looking for valid input
+	if(valid_strings.size() > 0) {
+		// For each possible valid string
+		for(auto valid : valid_strings) {
+			// See if string appears in line
+			if(input.find(valid) != std::string::npos) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	// For each invalid string
+	for(auto invalid : invalid_strings) {
+		// See if string appears in line
 		if(input.find(invalid) != std::string::npos) {
 			return false;
 		}

@@ -56,9 +56,12 @@ class Base_grammar {
 		//////////////////////////////////////////////////////////////////////
 		/// @brief 	Makes the grammar more abstract using a predefined set of 
 		/// 		rules.
-		/// @example	Change a single string into a regex	
+		/// 		Example: Change a single string into a regex
+		/// @param[in]	guarantee_abstract 	Guarantee certain abstracts 
+		/// 		instead of probabilistically choosing them based on
+		/// 		mutation rate.	
 		//////////////////////////////////////////////////////////////////////
-		virtual void abstract() = 0;
+		virtual void abstract(const bool guarantee_abstract = false) = 0;
 
 		//////////////////////////////////////////////////////////////////////
 		/// @brief 	Combines *this with mate to produce two children. Each 

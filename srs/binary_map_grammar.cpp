@@ -173,22 +173,31 @@ shared_ptr<Base_grammar> Binary_map_grammar::clone() const {
 
 vector<string> Binary_map_grammar::generate_strings() {
 	// List of words
-	vector<string> words;
+	unordered_set<string> words;
+	vector<string> unique_words;
 	string word;
 	int failed_attempts = 0;
 
-	while(static_cast<uint>(words.size()) < words_generated_count && failed_attempts < max_failed_attempts) {
+	while(words.size() < static_cast<uint>(words_generated_count) 
+		&& failed_attempts < max_failed_attempts) {
 		word = generate_string(grammar[start_symbol], 0);
 
 		if(max_depth_reached == true) {
 			max_depth_reached = false;
 			failed_attempts++;
-		} else {
-			words.push_back(word);
+		} else if(words.find(word) != words.end()) {
+			failed_attempts++;
+		}else {
+			words.insert(word);
 		}
 	}
 
-	return words;
+	unique_words.reserve(words.size());
+	for (auto it = words.begin(); it != words.end(); ) {
+		unique_words.push_back(std::move(words.extract(it++).value()));
+	}
+
+	return unique_words;
 }
 
 string Binary_map_grammar::generate_string(const vector<vector<uint32_t> >& rules, const int depth) {
@@ -334,18 +343,21 @@ uint32_t Binary_map_grammar::random_term() const {
 
 // Try to combine rules to make it more CFG-like (instead of regex)
 // Abstract out terminals (ex p = [a-z])
-void Binary_map_grammar::abstract() {
-	if(success()) { // NOTE: Might make absolute instead of probabilistic
+void Binary_map_grammar::abstract(const bool guarantee_abstract) {
+	if(success() || guarantee_abstract) {
 		eliminate_dead_rules();
 	}
-	if(success()) {
+	if(success() || guarantee_abstract) {
 		condense_repetition();
 	}
 	// Remove rules that only contain an epsilon
-	if(success() || true) {
+	if(success() || guarantee_abstract) {
 		remove_rules_only_containing_epsilon();
 		remove_rules_only_containing_a_non_terminal();
 	}
+
+	// NOTE: Add rule where if two non-terminal's rules are the same
+	// eliminate one and replace
 }
 
 // Attempt to condense rules adhering to the following example:

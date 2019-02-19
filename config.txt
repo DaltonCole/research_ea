@@ -4,7 +4,7 @@
 #	Can be either:
 #		"true", will use code coverage percentage
 #		"false", based on valid input, not code coverage
-Kcov: false
+Kcov: true
 
 # Executable
 Executable: /home/drc/Desktop/Research/ea/tester_parser/mipl_parser
@@ -13,11 +13,16 @@ Executable: /home/drc/Desktop/Research/ea/tester_parser/mipl_parser
 Sample file directory: /home/drc/Desktop/Research/ea/tester_parser/samples/
 #/home/drc/Desktop/Research/ea/json/
 
+# Valid strings, space delimited
+#	Note: valid strings take precidence over invalid strings
+Valid Strings:
+
 # Invalid strings, space delimited
 Invalid Strings: Invalid Line
 
+
 # Size of population
-Population Size: 100
+Population Size: 10
 
 # Parent Selection Method
 #	Can be either:
@@ -25,13 +30,19 @@ Population Size: 100
 #		* "Tournament Selection"
 Parent Selection: Tournament Selection
 
+# Parent Selection Method
+#	Can be either:
+#		* "Fitness Proportionate Selection"
+#		* "Tournament Selection"
+Survival Selection: Tournament Selection
+
 # Number of parents for parent selection
 #	Must be less than population size
 #	Need at least two parents
-Number of parents: 50
+Number of parents: 5
 
 # Number of children
-Number of children: 50
+Number of children: 5
 
 # Mutation Rate
 #	Float between 0 and 1
@@ -40,4 +51,7 @@ Mutation rate: 0.4
 
 # Number of samples to generate
 #	Defaults to 10
-Samples generated per fitness evaluation: 100
+Samples generated per fitness evaluation: 10
+
+# File to save grammar to
+Save File: /home/drc/Desktop/Research/ea/best_grammar.txt

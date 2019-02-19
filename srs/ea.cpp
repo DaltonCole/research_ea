@@ -1,6 +1,7 @@
 #include "ea.h"
 
 shared_ptr<Base_grammar> Ea::best_grammar = nullptr;
+string Ea::save_file = "";
 
 Ea::Ea() {
 }
@@ -61,10 +62,35 @@ void ctrl_c_handler(int s) {
 	}
 	Ea::best_grammar -> find_fitness();
 	*/
-	
-	cout << endl;
-	cout << *Ea::best_grammar << endl;
-	cout << "Fitness: " << Ea::best_grammar -> get_fitness() << endl;
+	Ea::best_grammar -> abstract();
+
+	if(Ea::save_file != "") {
+		cout << endl << "Quiting" << endl;
+		cout << "Look at " << Ea::save_file << " for results." << endl;
+		ofstream file(Ea::save_file);
+		file << *Ea::best_grammar << endl;
+
+		file << "Samples:" << endl;
+		int i = 0;
+		for(const auto& string : Ea::best_grammar -> generate_strings()) {
+			i++;
+			file << string << endl;
+			if(i == 10) {
+				break;
+			}
+		}
+
+		file << endl << "Fitness: " << Ea::best_grammar -> get_fitness() << endl;
+		file.close();
+	} else {
+		cout << endl;
+		cout << *Ea::best_grammar << endl;
+		cout << "Fitness: " << Ea::best_grammar -> get_fitness() << endl;
+	}
+
+	// Clean up tmp directories from code_coverage
+	Code_coverage::clean_up();
+
 	exit(1);
 }
 
@@ -108,7 +134,7 @@ void Ea::run() {
 	while(true) {
 		// Parent Selection
 		print_progress(genration, 1, "Parent Selection");
-		auto parents = parent_selection(static_cast<uint>(stoi(config["Number of parents"])));
+		auto parents = parent_selection();
 
 		// Generate children
 		print_progress(genration, 2, "Generate Children");
@@ -130,14 +156,17 @@ void Ea::run() {
 		update_fitness(population);
 
 		// --- Kill --- //
-		print_progress(genration, 6, "Sort Population");
-		sort_population();
-		print_progress(genration, 7, "Kill ψ(｀∇´)ψ");
+		print_progress(genration, 6, "Kill ψ(｀∇´)ψ");
 		kill_population();
 
 		// Update hall of fame best grammar
-		if(population.size() > 0 && population[0] -> get_fitness() > best_grammar -> get_fitness()) {
-			best_grammar = population[0] -> clone();
+		auto best_in_generation = *max_element(population.begin(), population.end(),
+			[](const shared_ptr<Base_grammar>& a, const shared_ptr<Base_grammar>& b) -> bool {
+			return a -> get_fitness() < b -> get_fitness();
+			});
+
+		if(best_in_generation -> get_fitness() > best_grammar -> get_fitness()) {
+			best_grammar = best_in_generation -> clone();
 		}
 
 		genration++;
@@ -149,38 +178,28 @@ void Ea::print_progress(const int genration, const int step_count, const string&
 		 << "Current best fitness: " << (best_grammar -> get_fitness())
 		 << " / " << (Base_grammar::words_generated_count * 100)
 		 << "\t"
-		 << step_count << " / 7 \t" << step  
+		 << step_count << " / 6 \t" << step  
 		 << "             \t\t\t\t\t\r";
 	
 	fflush(stdout);
 }
 
-void Ea::default_configurations() {
-	config["Population Size"] = "100";
-	config["Parent Selection"] = "Fitness Proportionate Selection";
-	config["Number of parents"] = "50";
-	config["Number of children"] = "50";
-	config["Mutation rate"] = "0.01";
-	config["Samples generated per fitness evaluation"] = "10";
-
-	config["Kcov"] = "false";
-	config["Executable"] = "/home/drc/Desktop/Research/ea/tester_parser/mipl_parser";
-	config["Sample file directory"] = "/home/drc/Desktop/Research/ea/json/";
-	/*
-	config[""] = ;
-	*/
+vector<shared_ptr<Base_grammar> > Ea::parent_selection() {
+	return algorithm_selection(config["Parent Selection"], 
+		static_cast<uint>(stoi(config["Number of parents"])));
 }
 
-vector<shared_ptr<Base_grammar> > Ea::parent_selection(const int number_to_return) {
-	if(config["Parent Selection"] == "Fitness Proportionate Selection") {
+vector<shared_ptr<Base_grammar> > Ea::algorithm_selection(const string& method,
+	const int number_to_return) {
+
+	if(method == "Fitness Proportionate Selection") {
 		return fitness_proportionate_selection(number_to_return);
-	} else if(config["Parent Selection"] == "Tournament Selection") {
+	} else if(method == "Tournament Selection") {
 		return tournament_selection(number_to_return);
 	}
 
 	return {};
 }
-
 
 
 // Children //
@@ -272,7 +291,8 @@ void Ea::kill_population() {
 }
 
 vector<shared_ptr<Base_grammar> > Ea::survivor_selection() {
-	return parent_selection(static_cast<uint>(stoi(config["Population Size"])));
+	return algorithm_selection(config["Survival Selection"],
+		static_cast<uint>(stoi(config["Population Size"])));
 }
 
 // Assumed every person in population already has fitness called
@@ -376,6 +396,25 @@ vector<shared_ptr<Base_grammar> > Ea::tournament_selection(const uint size) cons
 }
 
 
+void Ea::default_configurations() {
+	config["Population Size"] = "100";
+	config["Parent Selection"] = "Fitness Proportionate Selection";
+	config["Survival Selection"] = "Fitness Proportionate Selection";
+	config["Number of parents"] = "50";
+	config["Number of children"] = "50";
+	config["Mutation rate"] = "0.01";
+	config["Samples generated per fitness evaluation"] = "10";
+
+	config["Kcov"] = "false";
+	config["Executable"] = "/home/drc/Desktop/Research/ea/tester_parser/mipl_parser";
+	config["Sample file directory"] = "/home/drc/Desktop/Research/ea/json/";
+
+	config["Save File"] = "/home/drc/Desktop/Research/ea/best_grammar.txt";
+	/*
+	config[""] = ;
+	*/
+}
+
 void Ea::config_reader(const char* config_file) {
 	string line;
 	ifstream file(config_file);
@@ -387,15 +426,7 @@ void Ea::config_reader(const char* config_file) {
 				continue;
 			}
 
-			// For each configuration
-			for(auto& conf : config) {
-				// If config key is in line
-				if(line.find(conf.first) != std::string::npos) {
-					// Add config
-					config_reader_helper(conf.first, line);
-					break;
-				}
-			}
+			config_reader_helper(line);
 		}
 		file.close();
 	} else {
@@ -411,14 +442,16 @@ void Ea::config_reader(const char* config_file) {
 	config_checker();
 }
 
-void Ea::config_reader_helper(const string& key, const string& line) {
+void Ea::config_reader_helper(const string& line) {
 	string value = "";
+	string key = "";
 	uint index = 0;
 	// Find start of value
 	for(index = 0; index < line.size(); index++) {
 		if(line[index] == ':') {
 			break;
 		}
+		key += line[index];
 	}
 	index++;
 	// Remove initial spaces
@@ -463,6 +496,42 @@ void Ea::config_checker() {
 
 		Code_coverage::kcov_saved_path = executable_name;
 	}	
+
+	if(config.find("Save File") != config.end()) {
+		Ea::save_file = config["Save File"];
+	}
+
+	// Valid strings
+	if(config.find("Valid Strings") != config.end()) {
+		string word = "";
+		for(const auto& c : config["Valid Strings"]) {
+			if(c != ' ') {
+				word += c;
+			} else {
+				Code_coverage::valid_strings.push_back(word);
+				word = "";
+			}
+		}
+		if(word != "") {
+			Code_coverage::valid_strings.push_back(word);
+		}
+	}
+
+	// Invalid Strings
+	if(config.find("Invalid Strings") != config.end()) {
+		string word = "";
+		for(const auto& c : config["Invalid Strings"]) {
+			if(c != ' ') {
+				word += c;
+			} else {
+				Code_coverage::invalid_strings.push_back(word);
+				word = "";
+			}
+		}
+		if(word != "") {
+			Code_coverage::invalid_strings.push_back(word);
+		}
+	}
 }
 
 shared_ptr<Base_grammar> Ea::random_grammar_from_unordered_set(const unordered_set<shared_ptr<Base_grammar> > options) const {

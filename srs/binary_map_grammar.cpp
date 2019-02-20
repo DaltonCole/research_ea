@@ -187,7 +187,7 @@ vector<string> Binary_map_grammar::generate_strings() {
 			failed_attempts++;
 		} else if(words.find(word) != words.end()) {
 			failed_attempts++;
-		}else {
+		} else {
 			words.insert(word);
 		}
 	}
@@ -344,6 +344,17 @@ void Binary_map_grammar::mutate() {
 					terms = random_term();
 				}
 			}
+		}
+	}
+
+	// If start symbol was deleted, add it back and have it point to random rule
+	if(grammar.find(start_symbol) == grammar.end()) {
+		//auto test = (vector<uint32_t>());
+		grammar[start_symbol].push_back({vector<uint32_t>()});
+
+		if(grammar.size() > 0) {
+			auto random_it = std::next(std::begin(grammar), rand() % grammar.size());
+			grammar[start_symbol].back().push_back({(*random_it).first});
 		}
 	}
 

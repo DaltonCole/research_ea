@@ -3,7 +3,7 @@
 /* --- TASKS --- //
 * Make grammar rules unordered_sets
 
-* Start symbol deleted bug
+* Make grammar more probablistic for string generation, so more rules are touched
 // ------------- */
 
 
@@ -68,7 +68,9 @@ void ctrl_c_handler(int s) {
 		cout << endl << "Quiting" << endl;
 		cout << "Look at " << Ea::save_file << " for results." << endl;
 		ofstream file(Ea::save_file);
-		file << *Ea::best_grammar << endl;
+		file << *Ea::best_grammar;
+
+		file << "-------------------------------------------" << endl;
 
 		file << "Samples:" << endl;
 		int i = 0;

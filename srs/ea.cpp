@@ -1,5 +1,12 @@
 #include "ea.h"
 
+/* --- TASKS --- //
+* Make grammar rules unordered_sets
+
+* Start symbol deleted bug
+// ------------- */
+
+
 shared_ptr<Base_grammar> Ea::best_grammar = nullptr;
 string Ea::save_file = "";
 
@@ -10,7 +17,8 @@ Ea::Ea(shared_ptr<Base_grammar> (*create_pop) (void), const char* config_file) {
 	default_configurations();
 	config_reader(config_file);
 
-	vector<shared_ptr<Base_grammar> > initial_population = generate_population(create_pop);
+	vector<shared_ptr<Base_grammar> > initial_population = 
+		generate_population(create_pop, stoi(config["Population Size"]));
 
 	if(static_cast<uint>(stoi(config["Population Size"])) != initial_population.size()) {
 		if(static_cast<uint>(stoi(config["Population Size"])) < initial_population.size()) {
@@ -88,8 +96,13 @@ void ctrl_c_handler(int s) {
 }
 
 vector<shared_ptr<Base_grammar> > Ea::generate_population
-(shared_ptr<Base_grammar> (*create_pop) (void)) {
+(shared_ptr<Base_grammar> (*create_pop) (void), const uint size) {
 	vector<shared_ptr<Base_grammar> > initial_population;
+
+	static shared_ptr<Base_grammar> (*pop_func) (void) = nullptr;
+	if(create_pop != nullptr) {
+		pop_func = create_pop;
+	}
 
 	if(config[("Sample file directory")] != "") {
 		for(auto& path : std::experimental::filesystem::directory_iterator(config[("Sample file directory")])) {
@@ -98,10 +111,15 @@ vector<shared_ptr<Base_grammar> > Ea::generate_population
 			buffer << t.rdbuf();
 
 			initial_population.emplace_back(new Binary_map_grammar(buffer.str()));
+
+			// If population is large enough, break
+			if(initial_population.size() >= size) {
+				break;
+			}
 		}
 	} else {
-		for(uint i = 0; i < static_cast<uint>(stoi(config["Population Size"])); i++) {
-			initial_population.push_back((*create_pop)());
+		for(uint i = 0; i < size; i++) {
+			initial_population.push_back((*pop_func)());
 		}
 	}
 
@@ -281,6 +299,33 @@ void Ea::sort_population() {
 
 void Ea::kill_population() {
 	population = survivor_selection();
+
+	// Make sure every individual in population is unique
+	unordered_set<shared_ptr<Base_grammar> > unique_population;
+
+	auto it = unique_population.begin();
+	move(population.begin(), population.end(), inserter(unique_population, it));
+	population.erase(population.begin(), population.end());
+
+	if(unique_population.size() != 100) {
+		cout << unique_population.size() << "\t\t" << endl;
+	}
+
+	population.reserve(stoi(config["Population Size"]));
+	for(auto it2 = unique_population.begin(); it2 != unique_population.end(); ) {
+		population.push_back(move(unique_population.extract(it2++).value()));
+	}
+
+	// If we need to add more to population
+	if(population.size() != static_cast<uint>(stoi(config["Population Size"]))) {
+		auto add_pop = generate_population(nullptr, 
+			static_cast<uint>(stoi(config["Population Size"])) - population.size());
+
+		auto it2 = next(add_pop.begin(), add_pop.size());
+		move(add_pop.begin(), it2, back_inserter(population));
+		add_pop.erase(add_pop.begin(), it2);
+
+	}
 }
 
 vector<shared_ptr<Base_grammar> > Ea::survivor_selection() {

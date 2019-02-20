@@ -11,6 +11,7 @@
 #include <thread>
 #include <future>
 #include <experimental/filesystem>
+#include <iterator>	// inserter
 // sigaction //
 #include <signal.h>
 #include <stdlib.h>
@@ -77,14 +78,17 @@ class Ea {
 		/// 		initial population. Vector is either created
 		/// 		from "Sample file directory" if exists, or 
 		/// 		create_pop otherwise.
+		/// @pre
 		/// @param[in] create_pop 	Function pointer pointing to a function
 		/// 		that will create grammars. If "Sample file directory" is
 		/// 		defined in the config file, then the config takes 
 		/// 		precedence
+		/// @param[in]	size 	Size of output vector. Number of samples
+		/// 		to generate.
 		/// @return	Vector of initial grammars
 		//////////////////////////////////////////////////////////////////////
 		vector<shared_ptr<Base_grammar> > generate_population
-		(shared_ptr<Base_grammar> (*create_pop) (void));
+		(shared_ptr<Base_grammar> (*create_pop) (void), const uint size);
 
 		//////////////////////////////////////////////////////////////////////
 		/// @brief	Prints the current progress of the EA.

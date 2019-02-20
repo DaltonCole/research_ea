@@ -7,9 +7,9 @@ Samples:
 aaaaaa
 aa
 aaa
-a
-aaaa
 aaaaa
-aaaaaaaa
+a
+aaaaaaa
+aaaa
 -------------------------------------------
-Fitness: 4214
+Fitness: 9768

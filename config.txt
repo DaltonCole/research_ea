@@ -22,7 +22,7 @@ Invalid Strings: Invalid Line
 
 
 # Size of population
-Population Size: 10
+Population Size: 100
 
 # Parent Selection Method
 #	Can be either:
@@ -39,10 +39,10 @@ Survival Selection: Tournament Selection
 # Number of parents for parent selection
 #	Must be less than population size
 #	Need at least two parents
-Number of parents: 5
+Number of parents: 50
 
 # Number of children
-Number of children: 5
+Number of children: 50
 
 # Mutation Rate
 #	Float between 0 and 1

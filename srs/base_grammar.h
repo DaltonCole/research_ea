@@ -12,6 +12,7 @@
 #include <vector>
 #include <memory>
 #include <thread>
+#include <sstream>      // std::ostringstream
 using namespace std;
 
 //////////////////////////////////////////////////////////////////////
@@ -20,6 +21,14 @@ using namespace std;
 //////////////////////////////////////////////////////////////////////
 class Base_grammar {
 	public:
+		//////////////////////////////////////////////////////////////////////
+		/// @brief	Compares two grammars. Grammars are compared using the
+		/// 		<< operator.
+		/// @param	paramName2 description of the parameter
+		/// @return	True if both grammars have the same <<, false otherwise
+		//////////////////////////////////////////////////////////////////////
+		virtual bool operator==(const Base_grammar& other) const;
+
 		//////////////////////////////////////////////////////////////////////
 		/// @brief 	Creates a copy of the original object wrapped in a shared 
 		/// 		pointer.
@@ -110,5 +119,16 @@ class Base_grammar {
 	protected:
 		float fitness;	///< Grammar's fitness
 };
+
+namespace std {
+	template<>
+	struct hash<Base_grammar> {
+		size_t operator()(const Base_grammar& grammar) const {
+			ostringstream stream;
+			stream << grammar;
+			return hash<string>()(stream.str());
+		}
+	};
+}
 
 #endif

@@ -4,7 +4,7 @@
 #	Can be either:
 #		"true", will use code coverage percentage
 #		"false", based on valid input, not code coverage
-Kcov: true
+Kcov: false
 
 # Executable
 Executable: /home/drc/Desktop/Research/ea/tester_parser/mipl_parser

@@ -53,16 +53,8 @@ Ea::Ea(vector<shared_ptr<Base_grammar> >& initial_population, const char* config
 void ctrl_c_handler(int s) {
 	// Ignore unused variable warning
 	(void)s;
-	/*
-	cout << endl;
-	cout << "Fitness pre-abstract: " << Ea::best_grammar -> get_fitness() << endl;
 
-	for(int i = 0; i < 100; i++) {
-		Ea::best_grammar -> abstract();
-	}
-	Ea::best_grammar -> find_fitness();
-	*/
-	Ea::best_grammar -> abstract();
+	Ea::best_grammar -> abstract(true);
 
 	if(Ea::save_file != "") {
 		cout << endl << "Quiting" << endl;
@@ -80,7 +72,8 @@ void ctrl_c_handler(int s) {
 			}
 		}
 
-		file << endl << "Fitness: " << Ea::best_grammar -> get_fitness() << endl;
+		file << "-------------------------------------------" << endl;
+		file << "Fitness: " << Ea::best_grammar -> get_fitness() << endl;
 		file.close();
 	} else {
 		cout << endl;

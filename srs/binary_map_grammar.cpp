@@ -256,11 +256,25 @@ float Binary_map_grammar::find_fitness() {
 	// Non-terminals left hand sides count as 1, rules count as .1
 	float count = grammar.size();
 	for(const auto& rules : grammar){
-		count += (0.1 * static_cast<float>(rules.second.size()));
-		count += 1;
+		count += (5.0 * static_cast<float>(rules.second.size()));
+		count += 10.0;
 	}
 
 	fitness -= count;
+
+	// --- Favor diverse languages --- //
+	unordered_set<uint32_t> diverse;
+	for(const auto& rules : grammar) {
+		for(const auto& rule : rules.second) {
+			for(const auto& symbol : rule) {
+				if(grammar.find(symbol) == grammar.end()) {
+					diverse.insert(symbol);
+				}
+			}
+		}
+	}
+	// NOTE: change
+	fitness *= (1 + diverse.size());
 
 	return fitness;
 }

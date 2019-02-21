@@ -267,14 +267,14 @@ float Binary_map_grammar::find_fitness() {
 	for(const auto& rules : grammar) {
 		for(const auto& rule : rules.second) {
 			for(const auto& symbol : rule) {
-				if(grammar.find(symbol) == grammar.end()) {
+				if(binary_to_regex_mapping.find(symbol) != binary_to_regex_mapping.end()) {
 					diverse.insert(symbol);
 				}
 			}
 		}
 	}
 	// NOTE: change
-	fitness *= (1 + diverse.size());
+	fitness *= (1 + (diverse.size()));
 
 	return fitness;
 }

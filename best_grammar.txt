@@ -1,19 +1,14 @@
 [43mStart Symbol[0m
 [45m0:[0m
-a[36m\1035[0m
-a[36m\0[0m
-[45m1035:[0m
 a
 
+a[36m\0[0m
 -------------------------------------------
 Samples:
 aaaa
-aaaaaa
-aa
 aaa
-aaaaa
-aaaaaaaa
+aa
 a
-aaaaaaa
+
 -------------------------------------------
-Fitness: 14996
+Fitness: 600

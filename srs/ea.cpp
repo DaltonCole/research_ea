@@ -4,6 +4,7 @@
 * Make grammar rules unordered_sets
 
 * Make grammar more probablistic for string generation, so more rules are touched
+	* Favor rules that cause recursion
 // ------------- */
 
 
@@ -308,10 +309,6 @@ void Ea::kill_population() {
 	auto it = unique_population.begin();
 	move(population.begin(), population.end(), inserter(unique_population, it));
 	population.erase(population.begin(), population.end());
-
-	if(unique_population.size() != 100) {
-		cout << unique_population.size() << "\t\t" << endl;
-	}
 
 	population.reserve(stoi(config["Population Size"]));
 	for(auto it2 = unique_population.begin(); it2 != unique_population.end(); ) {

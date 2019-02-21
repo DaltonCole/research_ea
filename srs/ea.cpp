@@ -1,10 +1,11 @@
 #include "ea.h"
 
 /* --- TASKS --- //
-* Make grammar rules unordered_sets
-
 * Make grammar more probablistic for string generation, so more rules are touched
 	* Favor rules that cause recursion
+
+* Give more changes to generate unique strings. Do this if the above suggestion fails
+	to improve prospects
 // ------------- */
 
 

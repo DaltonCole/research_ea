@@ -149,6 +149,31 @@ class Binary_map_grammar : public Base_grammar {
 		//////////////////////////////////////////////////////////////////////
 		void eliminate_dead_rules_helper
 		(const uint32_t non_terminal, unordered_set<uint32_t>& touched_rules);
+
+		//////////////////////////////////////////////////////////////////////
+		/// @brief	Remove duplicate rules in each rule set
+		/// @post	No duplicate rules (rhs) exist in each rule set
+		//////////////////////////////////////////////////////////////////////
+		void remove_duplicate_rules();
+
+		//////////////////////////////////////////////////////////////////////
+		/// @brief	Compares the given rules. Returns true if lhs is less than
+		///			rhs, false otherwise. Less than is considered shorter rules
+		/// 		or smaller uint32_t's starting from the front.
+		/// 		Used for std::sort()
+		/// @param[in]	lhs 	First comparitor.
+		/// @param[in] 	rhs 	Second comparitor.
+		/// @return	True if lhs is less than or equal to rhs, false otherwise.
+		//////////////////////////////////////////////////////////////////////
+		friend bool sort_rule_sets(const vector<uint32_t> lhs, const vector<uint32_t> rhs);
+
+		//////////////////////////////////////////////////////////////////////
+		/// @brief	True if lhs == rhs. Used for std::unique.
+		/// @param[in]	lhs 	First comparitor.
+		/// @param[in] 	rhs 	Second comparitor.
+		/// @return	True if lhs == rhs. False otherwise.
+		//////////////////////////////////////////////////////////////////////
+		friend bool unique_rule_set(const vector<uint32_t> lhs, const vector<uint32_t> rhs);
 		// ------------------------ //
 
 		virtual pair<shared_ptr<Base_grammar>, shared_ptr<Base_grammar> > 

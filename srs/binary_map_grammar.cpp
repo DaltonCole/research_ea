@@ -378,7 +378,15 @@ void Binary_map_grammar::abstract(const bool guarantee_abstract) {
 	// Remove rules that only contain an epsilon
 	if(success() || guarantee_abstract) {
 		remove_rules_only_containing_epsilon();
+	}
+
+	if(success() || guarantee_abstract) {
 		remove_rules_only_containing_a_non_terminal();
+	}
+
+	// Remove duplicate rules in rule sets
+	if(success() || guarantee_abstract) {
+		remove_duplicate_rules();
 	}
 
 	// NOTE: Add rule where if two non-terminal's rules are the same
@@ -565,6 +573,47 @@ void Binary_map_grammar::eliminate_dead_rules_helper
 				eliminate_dead_rules_helper(term, touched_rules);
 			}
 		}
+	}
+}
+
+bool sort_rule_sets(const vector<uint32_t> lhs, const vector<uint32_t> rhs) {
+	if(lhs.size() < rhs.size()) {
+		return true;
+	} else if(lhs.size() > rhs.size()) {
+		return false;
+	} else { // Same size
+		for(uint i = 0; i < lhs.size(); i++) {
+			if(lhs[i] < rhs[i]) {
+				return true;
+			} else if(lhs[i] > rhs[i]) {
+				return false;
+			}
+		}
+	}
+	return true;
+}
+
+bool unique_rule_set(const vector<uint32_t> lhs, const vector<uint32_t> rhs) {
+	if(lhs.size() != rhs.size()) {
+		return false;
+	} else {
+		for(uint i = 0; i < lhs.size(); i++) {
+			if(lhs[i] != rhs[i]) {
+				return false;
+			}
+		}
+	}
+
+	return true;
+}
+
+void Binary_map_grammar::remove_duplicate_rules() {
+	for(auto& rules : grammar) {
+		// Sort
+		sort(rules.second.begin(), rules.second.end(), sort_rule_sets);
+		// Make unique
+		rules.second.erase(unique(rules.second.begin(), 
+			rules.second.end(), unique_rule_set), rules.second.end());
 	}
 }
 

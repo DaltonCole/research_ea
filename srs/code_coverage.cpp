@@ -36,7 +36,7 @@ int Code_coverage::get_index() {
 // Removes tmp directories
 void Code_coverage::clean_up() {
 	// Delete tmp directory
-	string command = "rm -r " + tmp_directory;
+	string command = "rm -r " + tmp_directory + " 2>/dev/null";
 	const int dir_err = system(command.c_str());
 	
 	if(dir_err == -1) {
@@ -66,7 +66,6 @@ float Code_coverage::operator()(const string& input, const int index) {
 		input_file.close();
 	} else {
 		string s = "File \"" + tmp_directory + to_string(index) + ".txt" + "\" did not open!";
-		cerr << s << endl;
 		throw s;
 	}
 
@@ -90,7 +89,6 @@ float Code_coverage::operator()(const string& input, const int index) {
 			infile.close();
 		} else {
 			string s = "File \"" + tmp_directory + to_string(index) + "/" + kcov_saved_path + "/coverage.json" + "\" did not open!";
-			cerr << s << endl;
 			throw s;
 		}
 	}
@@ -113,7 +111,7 @@ float Code_coverage::operator()(const vector<string>& inputs) {
 				total += fitness_no_code_coverage(inputs[i], index);
 			}
 		} catch(string e) {
-			cout << e << endl;
+			cerr << e << endl;
 		}
 	}
 

@@ -178,9 +178,14 @@ vector<string> Binary_map_grammar::generate_strings() {
 	string word;
 	int failed_attempts = 0;
 
+	// Reset probabilistic grammar
+	gram_prob.resize(grammar);
+
+	// While not enough words and not too many failed attempts
 	while(words.size() < static_cast<uint>(words_generated_count) 
 		&& failed_attempts < max_failed_attempts) {
-		word = generate_string(grammar[start_symbol], 0);
+		
+		word = generate_string(grammar[start_symbol], 0, start_symbol);
 
 		if(max_depth_reached == true) {
 			max_depth_reached = false;
@@ -200,7 +205,8 @@ vector<string> Binary_map_grammar::generate_strings() {
 	return unique_words;
 }
 
-string Binary_map_grammar::generate_string(const vector<vector<uint32_t> >& rules, const int depth) {
+string Binary_map_grammar::generate_string
+(const vector<vector<uint32_t> >& rules, const int depth, const uint32_t non_terminal) {
 	// If reached max depth
 	if(depth == max_string_depth) {
 		max_depth_reached = true;
@@ -214,21 +220,23 @@ string Binary_map_grammar::generate_string(const vector<vector<uint32_t> >& rule
 		return word;
 	}
 
-	int random_rule = rand() % rules.size();
+	// Probabilistically pick a random rule,
+	// favors rules that have been chosen less often
+	int random_rule = gram_prob.choosen_rule_index(non_terminal);
 
 	// Randomly choose rules until termination
 	// NOTE: need to improve on this idea with research stuff
-	for(const auto& non_terminal : rules[random_rule]) {
+	for(const auto& symbol : rules[random_rule]) {
 		// If max depth has been reached, go back
 		if(max_depth_reached == true) {
 			return "";
 		}
 
 		// If terminal character, add it to word
-		if(binary_to_regex_mapping.find(non_terminal) != binary_to_regex_mapping.end()) {
-			word += binary_to_regex_mapping[non_terminal].generate_string();
+		if(binary_to_regex_mapping.find(symbol) != binary_to_regex_mapping.end()) {
+			word += binary_to_regex_mapping[symbol].generate_string();
 		} else { // Non-terminal				
-			word += generate_string(grammar[non_terminal], depth + 1);
+			word += generate_string(grammar[symbol], depth + 1, symbol);
 		}
 	}
 

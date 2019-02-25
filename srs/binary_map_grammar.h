@@ -14,6 +14,7 @@
 #include "dfa.h"
 #include "base_grammar.h"
 #include "code_coverage.h"
+#include "grammar_probability.h"
 using namespace std;
 
 class Binary_map_grammar : public Base_grammar {
@@ -74,15 +75,17 @@ class Binary_map_grammar : public Base_grammar {
 		/// @brief 	Recursively generates a single string using the grammar
 		/// 		Once depth reaches max_string_depth, an epsilon will be 
 		/// 		returned instead of using possible rules.
-		/// @param[in] rules 	The current grammar rule (right hand side of rule)
-		/// 					to select from to generate the next part of 
-		/// 					the string
-		/// @param[in] depth 	The current recursive depth
+		/// @param[in]	rules 	The current grammar rule (right hand side of rule)
+		/// 		to select from to generate the next part of the string
+		/// @param[in]	depth 	The current recursive depth
+		/// @param[in]	non_terminal 	The non-terminal associated with the
+		/// 		list of possible production rules.
 		/// @return Generated string from grammar rules. Due to depth limit
 		/// 		the generated string my not be from the grammar. If this is
 		/// 		problematic, increase the max_depth_limit
 		//////////////////////////////////////////////////////////////////////
-		string generate_string(const vector<vector<uint32_t> >& rules, const int depth);
+		string generate_string
+		(const vector<vector<uint32_t> >& rules, const int depth, const uint32_t non_terminal);
 
 		virtual std::thread find_fitness_thread();
 		virtual float find_fitness();
@@ -186,6 +189,8 @@ class Binary_map_grammar : public Base_grammar {
 		//////////////////////////////////////////////////////////////////////
 		void print(ostream& os) const;
 
+		friend class Grammar_probability;
+
 	private:
 		unordered_map<uint32_t, vector<vector<uint32_t> > > 
 		grammar; 	///< The language's grammar
@@ -193,6 +198,8 @@ class Binary_map_grammar : public Base_grammar {
 					///< set is a combination of terminal and non-terminal terms.
 					///< binary_to_regex_mapping maps the uint32_t to its regex
 					///< counterpart.
+
+		Grammar_probability gram_prob;
 
 		// NOTE: Might pre-compute this so minor binary changes correlate to minor ascii changes
 		static unordered_map<char, uint32_t> 

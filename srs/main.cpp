@@ -47,6 +47,9 @@ int main(int argc, char *argv[]) {
 		return 0;
 	}
 
+	// Turn off cerr for now
+	std::cerr.setstate(std::ios_base::failbit);
+
 	// Initalize random
 	srand (time(NULL));
 

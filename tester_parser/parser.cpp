@@ -18,6 +18,11 @@ int main(int argc, char** argv) {
 		}
 	}
 
+	if(all == "") {
+		cout << "Invalid Line" << endl;
+		return 0;
+	}
+
 	bool at_b = false;
 	for(const auto& c : all) {
 		if(c == 'a' || c == 'b') {

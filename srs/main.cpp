@@ -19,10 +19,10 @@ using namespace std;
 shared_ptr<Base_grammar> a_star_b_star() {
 	string s = "";
 	///*
-	for(int i = 0; i < rand() % 100; i++) {
+	for(int i = 1; i < rand() % 100; i++) {
 		s += "a";
 	}
-	for(int i = 0; i < rand() % 100; i++) {
+	for(int i = 1; i < rand() % 100; i++) {
 		s += "b";
 	}
 	//*/

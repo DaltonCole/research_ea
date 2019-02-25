@@ -1,11 +1,7 @@
 #include "ea.h"
 
 /* --- TASKS --- //
-* Make grammar more probablistic for string generation, so more rules are touched
-	* Favor rules that cause recursion
-
-* Give more chances to generate unique strings. Do this if the above suggestion fails
-	to improve prospects
+* Fix start symbol problem
 // ------------- */
 
 
@@ -140,42 +136,44 @@ void Ea::run() {
 
 	// Keep track of generation
 	int genration = 0;
-	print_progress(genration, 7, "Update Fitness");
+	print_progress(nullptr, genration, 7, "Update Fitness");
 	genration++;
+
+	shared_ptr<Base_grammar> best_in_generation = nullptr;
 
 	// Set initial population's fitness
 	update_fitness(population);
 
 	while(true) {
 		// Parent Selection
-		print_progress(genration, 1, "Parent Selection");
+		print_progress(best_in_generation, genration, 1, "Parent Selection");
 		auto parents = parent_selection();
 
 		// Generate children
-		print_progress(genration, 2, "Generate Children");
+		print_progress(best_in_generation, genration, 2, "Generate Children");
 		auto children = generate_children(parents);
 
 		// Combine population
-		print_progress(genration, 3, "Combine Population");
+		print_progress(best_in_generation, genration, 3, "Combine Population");
 		for(auto& child : children) {
 			// Combine child with the population
 			population.push_back(child);
 		}
 
 		// Mutate
-		print_progress(genration, 4, "Mutate Population");
+		print_progress(best_in_generation, genration, 4, "Mutate Population");
 		mutate(population);
 
 		// Update fitness
-		print_progress(genration, 5, "Update Fitness");
+		print_progress(best_in_generation, genration, 5, "Update Fitness");
 		update_fitness(population);
 
 		// --- Kill --- //
-		print_progress(genration, 6, "Kill ψ(｀∇´)ψ");
+		print_progress(best_in_generation, genration, 6, "Kill ψ(｀∇´)ψ");
 		kill_population();
 
 		// Update hall of fame best grammar
-		auto best_in_generation = *max_element(population.begin(), population.end(),
+		best_in_generation = *max_element(population.begin(), population.end(),
 			[](const shared_ptr<Base_grammar>& a, const shared_ptr<Base_grammar>& b) -> bool {
 			return a -> get_fitness() < b -> get_fitness();
 			});
@@ -188,11 +186,17 @@ void Ea::run() {
 	}
 }
 
-void Ea::print_progress(const int genration, const int step_count, const string& step) {
-	cout << "On iteration: " << genration << " \t"
-		 << "Current best fitness: " << (best_grammar -> get_fitness())
+void Ea::print_progress(const shared_ptr<Base_grammar>& best_in_generation, 
+const int genration, const int step_count, const string& step) {
+	cout << "On iteration: " << genration << "    ";
+
+	if(best_in_generation != nullptr) {
+		cout << "Best Generation fitness: " << (best_in_generation -> get_fitness()) << "    ";
+	}
+
+	cout << "Current best fitness: " << (best_grammar -> get_fitness())
 		 << " / " << (Base_grammar::words_generated_count * 100)
-		 << "\t"
+		 << "    "
 		 << step_count << " / 6 \t" << step  
 		 << "             \t\t\t\t\t\r";
 	
@@ -318,6 +322,7 @@ void Ea::kill_population() {
 
 	// If we need to add more to population
 	if(population.size() != static_cast<uint>(stoi(config["Population Size"]))) {
+		cout << "ADD TO POPULATION" << endl;
 		auto add_pop = generate_population(nullptr, 
 			static_cast<uint>(stoi(config["Population Size"])) - population.size());
 

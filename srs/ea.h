@@ -92,11 +92,13 @@ class Ea {
 
 		//////////////////////////////////////////////////////////////////////
 		/// @brief	Prints the current progress of the EA.
+		/// @param[in]	best_in_geneation 	Best grammar in current generation
 		/// @param[in]	generation 	Current generation	
 		/// @param[in]	step_count 	Current step number
 		/// @param[in]	step 		Current step name
 		//////////////////////////////////////////////////////////////////////
-		void print_progress(const int genration, const int step_count, const string& step);
+		void print_progress(const shared_ptr<Base_grammar>& best_in_generation, 
+			const int genration, const int step_count, const string& step);
 
 		// --- Parent Selection --- //
 

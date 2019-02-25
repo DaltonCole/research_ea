@@ -367,7 +367,7 @@ void Binary_map_grammar::mutate() {
 	}
 
 	// Abstract rules out with "mutate" probability
-	abstract();
+	abstract(true);
 }
 
 uint32_t Binary_map_grammar::random_term() const {

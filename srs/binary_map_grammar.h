@@ -179,8 +179,29 @@ class Binary_map_grammar : public Base_grammar {
 		friend bool unique_rule_set(const vector<uint32_t> lhs, const vector<uint32_t> rhs);
 		// ------------------------ //
 
-		virtual pair<shared_ptr<Base_grammar>, shared_ptr<Base_grammar> > 
-		recombination(shared_ptr<Base_grammar>& mate);
+
+		// --- Recombination --- //
+		virtual vector<shared_ptr<Base_grammar> > 
+		recombination(const vector<shared_ptr<Base_grammar> >& mates,
+			const string& method, const uint number_of_children);
+
+		//////////////////////////////////////////////////////////////////////
+		/// @brief 	Combines *this with mates to produce a child. The child
+		/// 		contains all of the parent's rules.
+		/// @param[in]	mates 	The other parents
+		/// @return	A child that has all the rules of the parents
+		//////////////////////////////////////////////////////////////////////
+		shared_ptr<Base_grammar> recombination_single(const vector<shared_ptr<Base_grammar> >& mates);
+
+		//////////////////////////////////////////////////////////////////////
+		/// @brief 	Combines *this with mate to produce two children. Each 
+		/// 		child shares some gnomes from both parents.
+		/// @param[in]	mates 	The other parent
+		/// @return	A pair of children. 
+		//////////////////////////////////////////////////////////////////////
+		pair<shared_ptr<Base_grammar>, shared_ptr<Base_grammar> > 
+		recombination_twins(const shared_ptr<Base_grammar>& mate);
+		///////////////////////////
 
 		//////////////////////////////////////////////////////////////////////
 		/// @brief	Prints out the grammar to ostream.

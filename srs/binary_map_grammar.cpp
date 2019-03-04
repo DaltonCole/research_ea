@@ -645,17 +645,71 @@ Binary_map_grammar::Binary_map_grammar(const Base_grammar& lhs, const Base_gramm
 }
 */
 
+vector<shared_ptr<Base_grammar> > Binary_map_grammar::recombination(
+const vector<shared_ptr<Base_grammar> >& mates, 
+const string& method, const uint number_of_children) {
+	(void)method;
+
+	// Children
+	vector<shared_ptr<Base_grammar> > children;
+
+	if(number_of_children == 1) {
+		children.push_back(recombination_single(mates));
+	} else if(number_of_children == 2) {
+		if(mates.size() == 1) {
+			auto pair_of_children = recombination_twins(mates[0]);
+			children.push_back(pair_of_children.first);
+			children.push_back(pair_of_children.second);
+		}
+	}
+
+	return children;
+}
+
+// Child Combine both grammars
+shared_ptr<Base_grammar> Binary_map_grammar::recombination_single
+(const vector<shared_ptr<Base_grammar> >& mates) {
+	// Mother = this, father = mates
+
+	shared_ptr<Base_grammar> child(new Binary_map_grammar());
+
+	// Copy mothers's grammar into child
+	static_pointer_cast<Binary_map_grammar>(child) -> grammar = grammar;
+
+	// Copy each father's grammar into child
+	for(const auto& father : mates) {
+		for(const auto& rules : static_pointer_cast<Binary_map_grammar>(father) -> grammar) {
+			// If non-terminal rhs does not already exist in child's grammar
+			if(static_pointer_cast<Binary_map_grammar>(child) -> grammar.find(rules.first) == 
+				static_pointer_cast<Binary_map_grammar>(child) -> grammar.end()) {
+				// Add rhs non-terminal
+				static_pointer_cast<Binary_map_grammar>(child) -> grammar[rules.first] = rules.second;
+			} else { // rhs already exists in child
+				// Add each rule
+				for(const auto& rule : rules.second) {
+					static_pointer_cast<Binary_map_grammar>(child) -> 
+						grammar[rules.first].push_back(rule);
+				}
+			}
+		}
+	}
+
+	return child;
+}
+
 pair<shared_ptr<Base_grammar>, shared_ptr<Base_grammar> > 
-Binary_map_grammar::recombination(shared_ptr<Base_grammar>& mate) {
+Binary_map_grammar::recombination_twins(const shared_ptr<Base_grammar>& mate) {
+	// Mother = this, father = mate
+
+	// Generate empty children
 	shared_ptr<Base_grammar> first_child(new Binary_map_grammar());
 	shared_ptr<Base_grammar> second_child(new Binary_map_grammar());
 
+	// Copy mother's grammar into first child
 	static_pointer_cast<Binary_map_grammar>(first_child) -> grammar = grammar;
 
-	// Mother = this, father = mate
 	// Put first half of mother into first child and second half into second child
 	uint32_t non_terminal_count = 0;
-	// first -> grammar.size() <= grammar.size() / 2
 	while(static_pointer_cast<Binary_map_grammar>(first_child) -> grammar.size() <= grammar.size() / 2) {
 		// grammar.find != grammar.end
 		if(grammar.find(non_terminal_count) != grammar.end()) {

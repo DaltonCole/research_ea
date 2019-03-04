@@ -83,13 +83,16 @@ class Base_grammar {
 		virtual void abstract(const bool guarantee_abstract = false) = 0;
 
 		//////////////////////////////////////////////////////////////////////
-		/// @brief 	Combines *this with mate to produce two children. Each 
-		/// 		child shares some gnomes from both parents.
-		/// @param[in]	mate 	The other parent 
-		/// @return	A pair of children
+		/// @brief 	Combines *this with mates to produce children. Each 
+		/// 		child shares some gnomes from all parents.
+		/// @param[in]	mates 	The other parents
+		/// @param[in]	method 	Method to use to generate children
+		/// @param[in]	number_of_children 	Number of children to generate
+		/// @return	A vector of children
 		//////////////////////////////////////////////////////////////////////
-		virtual pair<shared_ptr<Base_grammar>, shared_ptr<Base_grammar> > 
-		recombination(shared_ptr<Base_grammar>& mate) = 0;
+		virtual vector<shared_ptr<Base_grammar> > 
+		recombination(const vector<shared_ptr<Base_grammar> >& mates,
+			const string& method, const uint number_of_children) = 0;
 
 		//////////////////////////////////////////////////////////////////////
 		/// @brief 	Prints out the grammar

@@ -25,16 +25,6 @@ shared_ptr<Base_grammar> a_star_b_star() {
 	for(int i = 1; i < rand() % 100; i++) {
 		s += "b";
 	}
-	//*/
-	/*
-	// aaabbb
-	for(int i = 0; i < 3; i++) {
-		s += "a";
-	}
-	for(int i = 0; i < 3; i++) {
-		s += "b";
-	}
-	*/
 
 	shared_ptr<Base_grammar> temp(new Binary_map_grammar(s));
 

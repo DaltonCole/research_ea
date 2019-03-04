@@ -10,7 +10,7 @@ Kcov: false
 Executable: /home/drc/Desktop/Research/ea/tester_parser/mipl_parser
 
 # Sample file directory
-Sample file directory: /home/drc/Desktop/Research/ea/tester_parser/samples/
+#Sample file directory: /home/drc/Desktop/Research/ea/tester_parser/samples/
 #/home/drc/Desktop/Research/ea/json/
 
 # Valid strings, space delimited
@@ -47,7 +47,7 @@ Number of children: 50
 # Mutation Rate
 #	Float between 0 and 1
 #	Defaults to 0.01
-Mutation rate: 0.4
+Mutation rate: 0.2
 
 # Number of samples to generate
 #	Defaults to 10

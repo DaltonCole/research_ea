@@ -2,6 +2,19 @@
 
 /* --- TASKS --- //
 * Fix start symbol problem
+	* Forgot what it was
+
+* Add functionality to read "strings" from the executable
+	and add those strings to random mutate possibilities
+		* This would help give the language more known possibilities
+		* Have "Binary_map_grammar::common_patterns" read from a file
+
+* Look at recombination
+
+* Look at mutation
+
+* ** Why is single digit generation best and never improve? **
+	* Grammar becomes toooooooo small (a single 'a')
 // ------------- */
 
 
@@ -60,7 +73,7 @@ void ctrl_c_handler(int s) {
 	// Ignore unused variable warning
 	(void)s;
 
-	Ea::best_grammar -> abstract(true);
+	//Ea::best_grammar -> abstract(true);
 
 	if(Ea::save_file != "") {
 		cout << endl << "Quiting" << endl;
@@ -104,7 +117,8 @@ vector<shared_ptr<Base_grammar> > Ea::generate_population
 		pop_func = create_pop;
 	}
 
-	if(config[("Sample file directory")] != "") {
+
+	if(config["Sample file directory"] != "") {
 		for(auto& path : std::experimental::filesystem::directory_iterator(config[("Sample file directory")])) {
 			std::ifstream t(path.path());
 			std::stringstream buffer;
@@ -136,7 +150,7 @@ void Ea::run() {
 
 	// Keep track of generation
 	int genration = 0;
-	print_progress(nullptr, genration, 7, "Update Fitness");
+	print_progress(nullptr, genration, 6, "Update Fitness");
 	genration++;
 
 	shared_ptr<Base_grammar> best_in_generation = nullptr;
@@ -177,6 +191,8 @@ void Ea::run() {
 			[](const shared_ptr<Base_grammar>& a, const shared_ptr<Base_grammar>& b) -> bool {
 			return a -> get_fitness() < b -> get_fitness();
 			});
+
+		cout << (*best_in_generation) << endl;
 
 		if(best_in_generation -> get_fitness() > best_grammar -> get_fitness()) {
 			best_grammar = best_in_generation -> clone();
@@ -242,15 +258,31 @@ vector<shared_ptr<Base_grammar> > Ea::generate_children
 			}
 		}
 
+		// First mate = mother
 		auto first_mate = random_grammar_from_unordered_set(parents_to_choose_from);
 		parents_to_choose_from.erase(parents_to_choose_from.find(first_mate));
-		auto second_mate = random_grammar_from_unordered_set(parents_to_choose_from);
-		parents_to_choose_from.erase(parents_to_choose_from.find(second_mate));
 
-		auto couple = first_mate -> recombination(second_mate);
+		// Mates
+		vector<shared_ptr<Base_grammar> > mates;
+		for(uint i = 0; i < 1; i++) {
+			// Add mate
+			mates.push_back(random_grammar_from_unordered_set(parents_to_choose_from));
 
-		children.push_back(couple.first);
-		children.push_back(couple.second);
+			parents_to_choose_from.erase(parents_to_choose_from.find(mates.back()));
+			// Shuffle in all possible parents if we need more options
+			if(parents_to_choose_from.size() < 2) {
+				for(const auto& par : parents) {
+					parents_to_choose_from.insert(par);
+				}
+			}
+		}		
+
+		auto babies = first_mate -> recombination(mates, "", 1);
+
+		// Add children
+		for(auto& baby : babies) {
+			children.push_back(baby);
+		}
 	}
 
 	return children;
@@ -305,6 +337,7 @@ void Ea::sort_population() {
 		});
 }
 
+// Unique has been varified to work
 void Ea::kill_population() {
 	population = survivor_selection();
 
@@ -322,7 +355,6 @@ void Ea::kill_population() {
 
 	// If we need to add more to population
 	if(population.size() != static_cast<uint>(stoi(config["Population Size"]))) {
-		cout << "ADD TO POPULATION" << endl;
 		auto add_pop = generate_population(nullptr, 
 			static_cast<uint>(stoi(config["Population Size"])) - population.size());
 
@@ -450,7 +482,7 @@ void Ea::default_configurations() {
 
 	config["Kcov"] = "false";
 	config["Executable"] = "/home/drc/Desktop/Research/ea/tester_parser/mipl_parser";
-	config["Sample file directory"] = "/home/drc/Desktop/Research/ea/json/";
+	config["Sample file directory"] = "";
 
 	config["Save File"] = "/home/drc/Desktop/Research/ea/best_grammar.txt";
 	/*

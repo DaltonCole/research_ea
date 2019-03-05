@@ -103,6 +103,12 @@ class Binary_map_grammar : public Base_grammar {
 		//////////////////////////////////////////////////////////////////////
 		uint32_t random_term() const;
 
+		//////////////////////////////////////////////////////////////////////
+		/// @brief 	Select a random non-terminal from the keys of "grammar"
+		/// @return A random non-terminal in the grammar
+		//////////////////////////////////////////////////////////////////////
+		uint32_t random_non_term() const;
+
 		virtual void abstract(const bool guarantee_abstract = false);
 
 		// --- Abstract helpers --- //

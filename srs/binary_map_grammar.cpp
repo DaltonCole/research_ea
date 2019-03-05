@@ -296,9 +296,20 @@ float Binary_map_grammar::get_fitness() {
 }
 
 void Binary_map_grammar::mutate() {
-	for(auto& rules : grammar) {
-		// Delete rule
+	// Delete random rule
+	if(success()) {
+		// Select a random rule set
+		uint32_t non_term = random_non_term();
+		// Make sure rule size is greater than 0
+		if(grammar[non_term].size() > 0) {
+			// Swap random rule with the back rule
+			swap(grammar[non_term][rand() % grammar[non_term].size()], grammar[non_term].back());
+			// Pop back rule
+			grammar[non_term].pop_back();
+		}
+	}
 
+	for(auto& rules : grammar) {
 		// Delete symbol
 		if(success()) {
 			// Delete single symbol in each rule with success() probability
@@ -372,6 +383,17 @@ void Binary_map_grammar::mutate() {
 
 uint32_t Binary_map_grammar::random_term() const {
 	return rand() % next_available_mapping;
+}
+
+uint32_t Binary_map_grammar::random_non_term() const {
+	int random = rand() % grammar.size();
+	auto it = grammar.begin();
+
+	// Advance iterator "random" times
+	advance(it, random);
+
+	// Return non-terminal
+	return (*it).first;
 }
 
 // Try to combine rules to make it more CFG-like (instead of regex)

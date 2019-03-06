@@ -1,6 +1,21 @@
 #include "ea.h"
 
 /* --- TASKS --- //
+* Fix this kind of problem, where rules can point to completely empty rules
+	* If empty rule, remove
+Start Symbol
+0:
+a
+\1417\1388\1503
+a\0
+751:
+1388:
+1417:
+1503:
+b\751
+b\1503
+
+
 * Fix start symbol problem
 	* Forgot what it was
 
@@ -15,6 +30,20 @@
 
 * ** Why is single digit generation best and never improve? **
 	* Grammar becomes toooooooo small (a single 'a')
+
+* Make each grammar a pair instead of a vector?
+	* A pair consisting of <terminal, non-terminal> or <terminal, epsilon>
+
+* Why different fitnesses when such a small grammar is being tested?
+	* S -> A | epsilon
+		* Fitness is 168 or -1**
+		* Failed attempts being hit?
+			* Very low probability
+
+* Recombination to one child causing std::bad_alloc crash eventually
+
+* Loosing information about the original input as time goes on.
+	* Want more abstraction from the original input, not to get rid of features
 // ------------- */
 
 
@@ -178,12 +207,18 @@ void Ea::run() {
 		print_progress(best_in_generation, genration, 4, "Mutate Population");
 		mutate(population);
 
+		// Abstract grammar
+		print_progress(best_in_generation, genration, 5, "Abstract Grammars");
+		for(auto& individual : population) {
+			individual -> abstract(true);
+		}
+
 		// Update fitness
-		print_progress(best_in_generation, genration, 5, "Update Fitness");
+		print_progress(best_in_generation, genration, 6, "Update Fitness");
 		update_fitness(population);
 
 		// --- Kill --- //
-		print_progress(best_in_generation, genration, 6, "Kill ψ(｀∇´)ψ");
+		print_progress(best_in_generation, genration, 7, "Kill ψ(｀∇´)ψ");
 		kill_population();
 
 		// Update hall of fame best grammar
@@ -192,7 +227,7 @@ void Ea::run() {
 			return a -> get_fitness() < b -> get_fitness();
 			});
 
-		cout << (*best_in_generation) << endl;
+		//cout << (*best_in_generation) << endl;
 
 		if(best_in_generation -> get_fitness() > best_grammar -> get_fitness()) {
 			best_grammar = best_in_generation -> clone();
@@ -213,7 +248,7 @@ const int genration, const int step_count, const string& step) {
 	cout << "Current best fitness: " << (best_grammar -> get_fitness())
 		 << " / " << (Base_grammar::words_generated_count * 100)
 		 << "    "
-		 << step_count << " / 6 \t" << step  
+		 << step_count << " / 7 \t" << step  
 		 << "             \t\t\t\t\t\r";
 	
 	fflush(stdout);

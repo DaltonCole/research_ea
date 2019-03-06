@@ -378,7 +378,7 @@ void Binary_map_grammar::mutate() {
 	}
 
 	// Abstract rules out with "mutate" probability
-	abstract(true);
+	//abstract(true);
 }
 
 uint32_t Binary_map_grammar::random_term() const {
@@ -620,14 +620,15 @@ bool sort_rule_sets(const vector<uint32_t> lhs, const vector<uint32_t> rhs) {
 			}
 		}
 	}
-	return true;
+	return false;
 }
 
 bool unique_rule_set(const vector<uint32_t> lhs, const vector<uint32_t> rhs) {
+	// If vectors are not the same size, return false
 	if(lhs.size() != rhs.size()) {
 		return false;
 	} else {
-		for(uint i = 0; i < lhs.size(); i++) {
+		for(uint i = 0; i < lhs.size() && i < rhs.size(); i++) {
 			if(lhs[i] != rhs[i]) {
 				return false;
 			}
@@ -641,6 +642,8 @@ void Binary_map_grammar::remove_duplicate_rules() {
 	for(auto& rules : grammar) {
 		// Sort
 		sort(rules.second.begin(), rules.second.end(), sort_rule_sets);
+
+
 		// Make unique
 		rules.second.erase(unique(rules.second.begin(), 
 			rules.second.end(), unique_rule_set), rules.second.end());
@@ -693,24 +696,21 @@ shared_ptr<Base_grammar> Binary_map_grammar::recombination_single
 (const vector<shared_ptr<Base_grammar> >& mates) {
 	// Mother = this, father = mates
 
-	shared_ptr<Base_grammar> child(new Binary_map_grammar());
-
 	// Copy mothers's grammar into child
-	static_pointer_cast<Binary_map_grammar>(child) -> grammar = grammar;
+	shared_ptr<Binary_map_grammar> child = static_pointer_cast<Binary_map_grammar>(clone());
 
 	// Copy each father's grammar into child
 	for(const auto& father : mates) {
+		// For each rule set in each grammar
 		for(const auto& rules : static_pointer_cast<Binary_map_grammar>(father) -> grammar) {
 			// If non-terminal rhs does not already exist in child's grammar
-			if(static_pointer_cast<Binary_map_grammar>(child) -> grammar.find(rules.first) == 
-				static_pointer_cast<Binary_map_grammar>(child) -> grammar.end()) {
+			if(child -> grammar.find(rules.first) == child -> grammar.end()) {
 				// Add rhs non-terminal
-				static_pointer_cast<Binary_map_grammar>(child) -> grammar[rules.first] = rules.second;
+				child -> grammar[rules.first] = rules.second;
 			} else { // rhs already exists in child
 				// Add each rule
 				for(const auto& rule : rules.second) {
-					static_pointer_cast<Binary_map_grammar>(child) -> 
-						grammar[rules.first].push_back(rule);
+					child -> grammar[rules.first].push_back(rule);
 				}
 			}
 		}

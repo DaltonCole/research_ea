@@ -10,6 +10,7 @@
 #include <iostream>
 #include <utility>
 #include <vector>
+#include <unordered_set>
 #include <memory>
 #include <thread>
 #include <sstream>      // std::ostringstream
@@ -38,10 +39,10 @@ class Base_grammar {
 
 		//////////////////////////////////////////////////////////////////////
 		/// @brief 	Generates sample strings from the language generated from 
-		/// 		the grammar
-		/// @return A vector of sample strings
+		/// 		the grammar. Each string is unique
+		/// @return An unordered set of sample strings
 		//////////////////////////////////////////////////////////////////////
-		virtual vector<string> generate_strings() = 0;
+		virtual unordered_set<string> generate_strings() = 0;
 
 		//////////////////////////////////////////////////////////////////////
 		/// @brief 	Creates a thread that calls the find_fitness function.

@@ -14,6 +14,7 @@ a\0
 1503:
 b\751
 b\1503
+	* Update_fitness causes this somehow
 
 
 * Fix start symbol problem
@@ -221,12 +222,22 @@ void Ea::run() {
 		print_progress(best_in_generation, genration, 7, "Kill ψ(｀∇´)ψ");
 		kill_population();
 
+		/* 
+		// NOTE: Look into why this kills things, because it shouldn't...
+		// ALSO, delete this once you figure it out
+		// Causes floating point exception
+		for(auto& individual : population) {
+			individual -> abstract(true);
+		}
+		*/
+
 		// Update hall of fame best grammar
 		best_in_generation = *max_element(population.begin(), population.end(),
 			[](const shared_ptr<Base_grammar>& a, const shared_ptr<Base_grammar>& b) -> bool {
 			return a -> get_fitness() < b -> get_fitness();
 			});
 
+		//best_in_generation -> abstract(true);
 		//cout << (*best_in_generation) << endl;
 
 		if(best_in_generation -> get_fitness() > best_grammar -> get_fitness()) {
@@ -333,27 +344,13 @@ void Ea::mutate(vector<shared_ptr<Base_grammar> >& mutate_population) const {
 // Update Fitness //
 void Ea::update_fitness(vector<shared_ptr<Base_grammar> >& fitness_population) const {
 	// Threads
-	//vector<future<void> > threads;
 	vector<thread> threads;
 
+	// For each individual
 	for(auto& person : fitness_population) {
-		// Call find fitness
-		//person -> find_fitness();
-
+		// Create find fitness thread
 		threads.push_back(person -> find_fitness_thread());
-		//person -> find_fitness();
-
-
-
-		//auto test = [=]{person -> find_fitness();};
-		//threads.push_back(async(test));
-		//threads.emplace_back(person -> find_fitness);
-		//threads.push_back((*person));
-		//auto test = [=]{person -> find_fitness();};
-		//threads.push_back(test);
 	}
-	//thread thread_1(&test_class::createS, this, 0, nCells/2, map1); 
-
 
 	for(auto& th : threads) {
 		// Join threads

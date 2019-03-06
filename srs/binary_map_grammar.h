@@ -69,23 +69,20 @@ class Binary_map_grammar : public Base_grammar {
 
 		virtual shared_ptr<Base_grammar> clone() const;
 
-		virtual vector<string> generate_strings();
+		virtual unordered_set<string> generate_strings();
 
 		//////////////////////////////////////////////////////////////////////
 		/// @brief 	Recursively generates a single string using the grammar
 		/// 		Once depth reaches max_string_depth, an epsilon will be 
-		/// 		returned instead of using possible rules.
-		/// @param[in]	rules 	The current grammar rule (right hand side of rule)
-		/// 		to select from to generate the next part of the string
+		/// 		returned instead of using possible rules. Due to depth limit
+		/// 		the generated string my not be from the grammar.
+		/// @param[in]	word 	Word that is being added to.
 		/// @param[in]	depth 	The current recursive depth
 		/// @param[in]	non_terminal 	The non-terminal associated with the
 		/// 		list of possible production rules.
-		/// @return Generated string from grammar rules. Due to depth limit
-		/// 		the generated string my not be from the grammar. If this is
-		/// 		problematic, increase the max_depth_limit
+
 		//////////////////////////////////////////////////////////////////////
-		string generate_string
-		(const vector<vector<uint32_t> >& rules, const int depth, const uint32_t non_terminal);
+		void generate_string(string& word, const int depth, const uint32_t non_terminal);
 
 		virtual std::thread find_fitness_thread();
 		virtual float find_fitness();

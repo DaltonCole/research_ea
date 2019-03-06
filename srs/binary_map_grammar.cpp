@@ -171,10 +171,9 @@ shared_ptr<Base_grammar> Binary_map_grammar::clone() const {
 }
 
 
-vector<string> Binary_map_grammar::generate_strings() {
+unordered_set<string> Binary_map_grammar::generate_strings() {
 	// List of words
 	unordered_set<string> words;
-	vector<string> unique_words;
 	string word;
 	int failed_attempts = 0;
 
@@ -185,7 +184,8 @@ vector<string> Binary_map_grammar::generate_strings() {
 	while(words.size() < static_cast<uint>(words_generated_count) 
 		&& failed_attempts < max_failed_attempts) {
 		
-		word = generate_string(grammar[start_symbol], 0, start_symbol);
+		string word = "";
+		generate_string(word, 0, start_symbol);
 
 		if(max_depth_reached == true) {
 			max_depth_reached = false;
@@ -197,50 +197,52 @@ vector<string> Binary_map_grammar::generate_strings() {
 		}
 	}
 
-	unique_words.reserve(words.size());
-	for (auto it = words.begin(); it != words.end(); ) {
-		unique_words.push_back(std::move(words.extract(it++).value()));
-	}
-
-	return unique_words;
+	return words;
 }
 
-string Binary_map_grammar::generate_string
-(const vector<vector<uint32_t> >& rules, const int depth, const uint32_t non_terminal) {
+
+// NOTE: Problem CHILD
+/* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+This is because a map's operator[] will insert a new 
+element if the key isn't found, so obviously it has to be non-const.
+*/
+void Binary_map_grammar::generate_string
+(string& word, const int depth, const uint32_t non_terminal) {
 	// If reached max depth
 	if(depth == max_string_depth) {
 		max_depth_reached = true;
-		return "";
+		return;
 	}
 
-	string word = "";
-
 	// No rules = lambda
-	if(rules.size() == 0) {
-		return word;
+	if(grammar[non_terminal].size() == 0) {
+		cout << "SHOUDL NOT HAPPEN" << endl;
+		exit(1);
+		return;
 	}
 
 	// Probabilistically pick a random rule,
 	// favors rules that have been chosen less often
-	int random_rule = gram_prob.choosen_rule_index(non_terminal);
+	int random_rule = rand() % grammar[non_terminal].size();//gram_prob.choosen_rule_index(non_terminal);
 
-	// Randomly choose rules until termination
-	// NOTE: need to improve on this idea with research stuff
-	for(const auto& symbol : rules[random_rule]) {
+	// For each symbol in rule
+	for(const auto& symbol : grammar[non_terminal][random_rule]) {
 		// If max depth has been reached, go back
 		if(max_depth_reached == true) {
-			return "";
+			return;
 		}
 
 		// If terminal character, add it to word
 		if(binary_to_regex_mapping.find(symbol) != binary_to_regex_mapping.end()) {
 			word += binary_to_regex_mapping[symbol].generate_string();
-		} else { // Non-terminal				
-			word += generate_string(grammar[symbol], depth + 1, symbol);
+		} else { // Non-terminal
+			if(grammar.find(symbol) != grammar.end()) {	
+				generate_string(word, depth + 1, symbol);
+			}
 		}
 	}
 
-	return word;
+	return;
 }
 
 std::thread Binary_map_grammar::find_fitness_thread() {
@@ -250,14 +252,16 @@ std::thread Binary_map_grammar::find_fitness_thread() {
 float Binary_map_grammar::find_fitness() {
 	Code_coverage code_coverage;
 
-	vector<string> samples = generate_strings();
+	unordered_set<string> samples = generate_strings();
 
-	// Decrease possible fitness for repeated strings
-	sort(samples.begin(), samples.end());
-	auto it = unique(samples.begin(), samples.end());
-	samples.resize(std::distance(samples.begin(), it));
+	// Convert samples to a vector of samples
+	vector<string> vector_samples;
+	vector_samples.reserve(samples.size());
+	for (auto it = samples.begin(); it != samples.end(); ) {
+		vector_samples.push_back(std::move(samples.extract(it++).value()));
+	}
 
-	fitness = code_coverage(samples);
+	fitness = code_coverage(vector_samples);
 
 	// --- Favor smaller rules sets --- //
 	// Do this by simply subtracting the fitness by the number of rules in grammar
@@ -296,6 +300,8 @@ float Binary_map_grammar::get_fitness() {
 }
 
 void Binary_map_grammar::mutate() {
+	/* 
+	// NOTE: CAUSES FLOATING POINT EXCEPTION
 	// Delete random rule
 	if(success()) {
 		// Select a random rule set
@@ -308,6 +314,7 @@ void Binary_map_grammar::mutate() {
 			grammar[non_term].pop_back();
 		}
 	}
+	*/
 
 	for(auto& rules : grammar) {
 		// Delete symbol
@@ -517,7 +524,6 @@ void Binary_map_grammar::remove_rules_only_containing_epsilon() {
 		if(gram.second.size() == 0) {
 			// Add to remove list
 			epsilon_rules.insert(gram.first);
-			
 		}
 	}
 
@@ -526,9 +532,12 @@ void Binary_map_grammar::remove_rules_only_containing_epsilon() {
 		grammar.erase(ep_rule);
 	}
 
-	for(auto& gram : grammar) {
-		for(auto& rule : gram.second) {
-			for(const auto& ep_rule : epsilon_rules) {
+	// For each rule to remove
+	for(const auto& ep_rule : epsilon_rules) {
+		// For each ruleset
+		for(auto& rules : grammar) {
+			// For each rule in a ruleset
+			for(auto& rule : rules.second) {
 				rule.erase(remove(rule.begin(), rule.end(), ep_rule), rule.end());
 			}
 		}
@@ -793,7 +802,9 @@ void Binary_map_grammar::print(ostream& os) const {
 			os << "\033[43m" << "Start Symbol" << "\033[0m" << endl;
 		}
 		// Print non terminal
-		os << "\033[45m" << gram.first << ":\033[0m" << endl;
+		os << "\033[45m" << gram.first << ":\033[0m" << "\t" << gram.second.size()
+
+		<< endl;
 		// For each non terminal
 		for(const auto& rule : gram.second) {
 			// For each rule

@@ -1,20 +1,11 @@
 #include "ea.h"
 
 /* --- TASKS --- //
-* Fix this kind of problem, where rules can point to completely empty rules
-	* If empty rule, remove
-Start Symbol
-0:
-a
-\1417\1388\1503
-a\0
-751:
-1388:
-1417:
-1503:
-b\751
-b\1503
-	* Update_fitness causes this somehow
+* Fix
+	* Multiple entries in DFA map can contain the same regex or string
+		* Fix this by keeping track of an unordered_set
+			* Could make this static and have it return a uint32_t if it already exists
+			or a new uint32_t if it does not exist yet
 
 
 * Fix start symbol problem
@@ -238,7 +229,7 @@ void Ea::run() {
 			});
 
 		//best_in_generation -> abstract(true);
-		//cout << (*best_in_generation) << endl;
+		cout << (*best_in_generation) << endl;
 
 		if(best_in_generation -> get_fitness() > best_grammar -> get_fitness()) {
 			best_grammar = best_in_generation -> clone();

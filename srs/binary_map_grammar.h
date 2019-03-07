@@ -180,6 +180,12 @@ class Binary_map_grammar : public Base_grammar {
 		/// @return	True if lhs == rhs. False otherwise.
 		//////////////////////////////////////////////////////////////////////
 		friend bool unique_rule_set(const vector<uint32_t> lhs, const vector<uint32_t> rhs);
+
+		//////////////////////////////////////////////////////////////////////
+		/// @brief	Removes symbols that do not exist in DFA map nor
+		/// 		in the grammar as non-terminals
+		//////////////////////////////////////////////////////////////////////
+		void remove_non_existant_symbols();
 		// ------------------------ //
 
 

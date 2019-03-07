@@ -216,14 +216,12 @@ void Binary_map_grammar::generate_string
 
 	// No rules = lambda
 	if(grammar[non_terminal].size() == 0) {
-		cout << "SHOUDL NOT HAPPEN" << endl;
-		exit(1);
 		return;
 	}
 
 	// Probabilistically pick a random rule,
 	// favors rules that have been chosen less often
-	int random_rule = rand() % grammar[non_terminal].size();//gram_prob.choosen_rule_index(non_terminal);
+	int random_rule = gram_prob.choosen_rule_index(non_terminal);
 
 	// For each symbol in rule
 	for(const auto& symbol : grammar[non_terminal][random_rule]) {
@@ -238,6 +236,9 @@ void Binary_map_grammar::generate_string
 		} else { // Non-terminal
 			if(grammar.find(symbol) != grammar.end()) {	
 				generate_string(word, depth + 1, symbol);
+			} else {
+				cout << (*this) << endl;
+				exit(1);
 			}
 		}
 	}
@@ -428,6 +429,11 @@ void Binary_map_grammar::abstract(const bool guarantee_abstract) {
 
 	// NOTE: Add rule where if two non-terminal's rules are the same
 	// eliminate one and replace
+
+
+	if(success() || guarantee_abstract) {
+		remove_non_existant_symbols();
+	}
 }
 
 // Attempt to condense rules adhering to the following example:
@@ -656,6 +662,38 @@ void Binary_map_grammar::remove_duplicate_rules() {
 		// Make unique
 		rules.second.erase(unique(rules.second.begin(), 
 			rules.second.end(), unique_rule_set), rules.second.end());
+	}
+}
+
+void Binary_map_grammar::remove_non_existant_symbols() {
+	unordered_set<uint32_t> non_existant_symbols;
+
+	// For each rule-set
+	for(auto& rules : grammar) {
+		// For each rule in a rule-set
+		for(auto& rule : rules.second) {
+			// For each symbol
+			for(auto& symbol : rule) {
+				// If symbol is not in DFA mapping or is not a non-terminal grammar key
+				if(binary_to_regex_mapping.find(symbol) == binary_to_regex_mapping.end()
+					&& grammar.find(symbol) == grammar.end()) {
+					// Add to non-existant symbols
+					non_existant_symbols.insert(symbol);
+				}
+			}
+		}
+	}
+
+	// For each rule to remove
+	for(const auto& symbol : non_existant_symbols) {
+		// For each rule-set
+		for(auto& rules : grammar) {
+			// For each rule in a rule-set
+			for(auto& rule : rules.second) {
+				// Erase non-existant symbol
+				rule.erase(remove(rule.begin(), rule.end(), symbol), rule.end());
+			}
+		}
 	}
 }
 

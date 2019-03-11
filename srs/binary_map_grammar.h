@@ -80,7 +80,6 @@ class Binary_map_grammar : public Base_grammar {
 		/// @param[in]	depth 	The current recursive depth
 		/// @param[in]	non_terminal 	The non-terminal associated with the
 		/// 		list of possible production rules.
-
 		//////////////////////////////////////////////////////////////////////
 		void generate_string(string& word, const int depth, const uint32_t non_terminal);
 
@@ -88,7 +87,52 @@ class Binary_map_grammar : public Base_grammar {
 		virtual float find_fitness();
 		virtual float get_fitness();
 
+		// -- Mutation Rules --- //
 		virtual void mutate();
+
+		//////////////////////////////////////////////////////////////////////
+		/// @brief 	Delete random rule from the grammar
+		/// @post 	A random rule out of the entire grammar will be erased
+		//////////////////////////////////////////////////////////////////////
+		bool delete_random_rule_from_grammar();
+
+		//////////////////////////////////////////////////////////////////////
+		/// @brief	Insert random symbol as a rule into the rule-set
+		/// @param[out]	rules 	Rule-set to add a random symbol rule to
+		/// @return Always returns true
+		//////////////////////////////////////////////////////////////////////
+		bool insert_random_rule(vector<vector<uint32_t> >& rules) const;
+
+		//////////////////////////////////////////////////////////////////////
+		/// @brief	Insert random rule from rthe grammar into the rune-set
+		/// @param[out]	rules 	Rule-set to add a random rule to
+		/// @return Returns false if grammar is empty or if randomly selected
+		/// 	rule-set is empty, true otherwise
+		//////////////////////////////////////////////////////////////////////
+		bool insert_random_other_rule(vector<vector<uint32_t> >& rules);
+
+		//////////////////////////////////////////////////////////////////////
+		/// @brief	Delete random symbol from rule
+		/// @param[out]	rule 	Rule to remove a random symbol from
+		/// @return If rule size is 0 before removing symbol, return false,
+		/// 	true otherwise
+		//////////////////////////////////////////////////////////////////////
+		bool delete_random_symbol(vector<uint32_t>& rule) const;
+
+		//////////////////////////////////////////////////////////////////////
+		/// @brief	Insert random symbol into rule out of pool of symbols
+		/// @param[out]	rule 	Rule to add a random symbol to
+		/// @return Always returns true
+		//////////////////////////////////////////////////////////////////////
+		bool insert_random_symbol(vector<uint32_t>& rule) const;
+
+		//////////////////////////////////////////////////////////////////////
+		/// @brief	Mutate random symbol from rule
+		/// @param[out]	rule 	Rule to mutate a random symbol in
+		/// @return If rule size is 0, return false, true otherwise
+		//////////////////////////////////////////////////////////////////////
+		bool mutate_random_symbol(vector<uint32_t>& rule) const;
+		///////////////////////////
 
 		//////////////////////////////////////////////////////////////////////
 		/// @brief 	Select a random symbol from list of possible symbols

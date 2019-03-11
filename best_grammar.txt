@@ -1,23 +1,23 @@
 [43mStart Symbol[0m
-[45m0:[0m	2
-a[36m\0[0m
-a[36m\1641[0m
-[45m1641:[0m	2
+[45m0:[0m	1
+a[36m\964[0m
+[45m964:[0m	2
+a[36m\964[0m
+a[36m\967[0m
+[45m967:[0m	2
 
-a[36m\1647[0m
-[45m1647:[0m	1
 b
 -------------------------------------------
 Samples:
-aaaaab
-aaa
 aaaaaab
-aaaab
-a
-aaab
+aaaaaaaa
+aaaaab
+aaaaaaab
+aaa
 aa
 aab
-aaaaaaaaab
+aaab
+aaaab
 aaaa
 -------------------------------------------
 Fitness: 2826

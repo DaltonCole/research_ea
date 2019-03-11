@@ -36,6 +36,11 @@
 
 * Loosing information about the original input as time goes on.
 	* Want more abstraction from the original input, not to get rid of features
+
+* Error:
+terminate called after throwing an instance of 'std::runtime_error'ate Fitness                 					
+  what():  popen() failed!
+Aborted
 // ------------- */
 
 
@@ -178,6 +183,8 @@ void Ea::run() {
 
 	// Set initial population's fitness
 	update_fitness(population);
+
+	//cout << (*population[0]) << endl;
 
 	while(true) {
 		// Parent Selection

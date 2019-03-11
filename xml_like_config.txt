@@ -7,10 +7,10 @@
 Kcov: false
 
 # Executable
-Executable: /home/drc/Desktop/Research/ea/tester_parser/parser
+Executable: /home/drc/Desktop/Research/ea/tester_parser/xml_like
 
 # Sample file directory
-#Sample file directory: /home/drc/Desktop/Research/ea/tester_parser/samples/
+#Sample file directory: /home/drc/Desktop/Research/ea/tester_parser/xml_like_samples/
 #/home/drc/Desktop/Research/ea/json/
 
 # Valid strings, space delimited
@@ -46,11 +46,11 @@ Number of children: 50
 # Mutation Rate
 #	Float between 0 and 1
 #	Defaults to 0.01
-Mutation rate: 0.2
+Mutation rate: 0.05
 
 # Number of samples to generate
 #	Defaults to 10
 Samples generated per fitness evaluation: 10
 
 # File to save grammar to
-Save File: /home/drc/Desktop/Research/ea/best_grammar.txt
+Save File: /home/drc/Desktop/Research/ea/best_grammar_xml_like.txt

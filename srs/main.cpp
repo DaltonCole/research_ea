@@ -31,6 +31,23 @@ shared_ptr<Base_grammar> a_star_b_star() {
 	return temp;
 }
 
+shared_ptr<Base_grammar> xml_like() {
+	string label = "";
+	string internal = "";
+
+	for(int i = 1; i <= (rand() % 10) + 1; i++) {
+		label += ('a' + (rand() % 26));
+	}
+
+	for(int i = 1; i <= (rand() % 10) + 1; i++) {
+		internal += ('a' + (rand() % 26));
+	}
+
+	string s = "<" + label + ">" + internal + "</" + label + ">";
+
+	return shared_ptr<Base_grammar>(new Binary_map_grammar(s));
+}
+
 int main(int argc, char *argv[]) {
 	if(argc != 2) {
 		cout << "NOPE!" << endl;

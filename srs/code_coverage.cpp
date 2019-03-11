@@ -91,6 +91,27 @@ float Code_coverage::operator()(const string& input, const int index) {
 			string s = "File \"" + tmp_directory + to_string(index) + "/" + kcov_saved_path + "/coverage.json" + "\" did not open!";
 			throw s;
 		}
+	} else { // Return code_coverage - 100, more code coverage => better, although, still wrong
+		// Find code coverage in JSON file
+		ifstream infile(tmp_directory + to_string(index) + "/" + kcov_saved_path + "/coverage.json");
+
+		if(infile.is_open()) {
+			string line;
+			while(getline(infile, line)) {
+				// Make sure "file" is not part of line
+				if(line.find("file") == std::string::npos) {
+					// Find json line containing only "percent_covered" field
+					if(line.find("percent_covered") != std::string::npos) {
+						infile.close();
+						return (parse_json_line_containing_code_coverage(line) - 100);
+					}
+				}
+			}
+			infile.close();
+		} else {
+			string s = "File \"" + tmp_directory + to_string(index) + "/" + kcov_saved_path + "/coverage.json" + "\" did not open!";
+			throw s;
+		}
 	}
 
 	// If invalid input, subtract fitness

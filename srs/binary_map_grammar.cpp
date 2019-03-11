@@ -236,9 +236,6 @@ void Binary_map_grammar::generate_string
 		} else { // Non-terminal
 			if(grammar.find(symbol) != grammar.end()) {	
 				generate_string(word, depth + 1, symbol);
-			} else {
-				cout << (*this) << endl;
-				exit(1);
 			}
 		}
 	}
@@ -301,75 +298,36 @@ float Binary_map_grammar::get_fitness() {
 }
 
 void Binary_map_grammar::mutate() {
-	/* 
-	// NOTE: CAUSES FLOATING POINT EXCEPTION
 	// Delete random rule
 	if(success()) {
-		// Select a random rule set
-		uint32_t non_term = random_non_term();
-		// Make sure rule size is greater than 0
-		if(grammar[non_term].size() > 0) {
-			// Swap random rule with the back rule
-			swap(grammar[non_term][rand() % grammar[non_term].size()], grammar[non_term].back());
-			// Pop back rule
-			grammar[non_term].pop_back();
-		}
+		delete_random_rule_from_grammar();
 	}
-	*/
 
 	for(auto& rules : grammar) {
-		// Delete symbol
+		// Add a rule as a single symbol
 		if(success()) {
-			// Delete single symbol in each rule with success() probability
-			// favors rules that are closer to the start
-			for(auto& rule : rules.second) {
-				if(success() && rule.size() != 0) {
-					std::swap(rule[rand() % rule.size()], rule.back());
-    				rule.pop_back();
-					break;
-				}
-			}
-		}
-
-		// Add a rule as a single non terminal or terminal
-		if(success()) {
-			rules.second.push_back({random_term()});
+			insert_random_rule(rules.second);
 		}
 
 		// Add rule from random other rule
 		if(success()) {
-			uint32_t a_term = random_term();
-			if(grammar.find(a_term) != grammar.end()) {
-				// Throw error if bad size
-				if(grammar[a_term].size() == 0) {
-					string s = "Error in mutate! Rules size is 0! 1";
-					//cerr << s << endl;
-					//throw s;
-				} else {
-					rules.second.push_back(grammar[a_term][rand() % grammar[a_term].size()]);
-				}
-			}
+			insert_random_other_rule(rules.second);
 		}
 
 		for(auto& rule : rules.second) {
-			// Add to rule (insert)
+			// Insert random symbol into rule
 			if(success()) {
-				// Throw error if bad size
-				if(rule.size() == 0) {
-					string s = "Error in mutate! Rule size is 0! 2";
-					//cerr << s << endl;
-					//throw s;
-				} else {
-					rule.insert(rule.begin() + (rand() % rule.size()), random_term()); // NOTE: CAN CAUSE GRAMMAR TO NEVER END
-				}
+				insert_random_symbol(rule);
 			}
 
-			// For each (non)terminal in each rule
-			for(auto& terms : rule) {
-				// Change it to a different symbol
-				if(success()) {
-					terms = random_term();
-				}
+			// Change random symbol to another random symbol
+			if(success()) {
+				mutate_random_symbol(rule);
+			}
+
+			// Delete single symbol in each rule with success() probability
+			if(success()) {
+				delete_random_symbol(rule);
 			}
 		}
 	}
@@ -387,6 +345,86 @@ void Binary_map_grammar::mutate() {
 
 	// Abstract rules out with "mutate" probability
 	//abstract(true);
+}
+
+bool Binary_map_grammar::delete_random_rule_from_grammar() {
+	// Select a random rule-set
+	uint32_t non_term = random_non_term();
+
+	// Make sure rule-size is greater than 0
+	if(grammar[non_term].size() == 0) {
+		return false;
+	}
+
+	// NOTE: CAUSES FLOATING POINT EXCEPTION
+	try{
+		// Swap random rule with the back rule
+		swap(grammar[non_term][rand() % grammar[non_term].size()], grammar[non_term].back());
+		// Pop back rule
+		grammar[non_term].pop_back();
+
+		return true;
+	} catch(...) {}
+
+	return false;
+}
+
+bool Binary_map_grammar::insert_random_rule(vector<vector<uint32_t> >& rules) const {
+	rules.push_back({random_term()});
+
+	return true;
+}
+
+bool Binary_map_grammar::insert_random_other_rule(vector<vector<uint32_t> >& rules) {
+	// Select random rule-set
+	if(grammar.size() == 0) {
+		return false;
+	}
+	uint32_t random_non_terminal = random_non_term();
+
+	// Select random rule
+	if(grammar[random_non_terminal].size() == 0) {
+		return false;
+	}
+	uint32_t random_rule = rand() % grammar[random_non_terminal].size();
+
+	rules.push_back(grammar[random_non_terminal][random_rule]);
+
+	return true;
+}
+
+bool Binary_map_grammar::delete_random_symbol(vector<uint32_t>& rule) const {
+	// Make sure rule size is not 0
+	if(rule.size() == 0) {
+		return false;
+	}
+
+	// Select random symbol to delete
+	int rand_symbol = rand() % rule.size();
+
+	rule.erase(rule.begin() + rand_symbol);
+
+	return true;
+}
+
+bool Binary_map_grammar::insert_random_symbol(vector<uint32_t>& rule) const {
+	int random_spot = 0;
+	if(rule.size() != 0) {
+		random_spot = rand() % rule.size();
+	}
+
+	rule.insert(rule.begin() + random_spot, random_term());
+
+	return true;
+}
+
+bool Binary_map_grammar::mutate_random_symbol(vector<uint32_t>& rule) const {
+	if(rule.size() == 0) {
+		return false;
+	}
+	rule[rand() % rule.size()] = random_term();
+
+	return true;
 }
 
 uint32_t Binary_map_grammar::random_term() const {
@@ -488,7 +526,7 @@ void Binary_map_grammar::condense_repetition() {
 						}
 						// -- If other key has multiple rules -- //
 						else if(grammar[rule[i]].size() > 1) {
-
+// NOTE: FINISH
 						}
 
 					}

@@ -46,6 +46,14 @@ class Dfa {
 		//////////////////////////////////////////////////////////////////////
 		friend ostream & operator << (ostream & os, const Dfa& binary);
 
+		//////////////////////////////////////////////////////////////////////
+		/// @brief	Getter for "non_regex_string"
+		/// @return	Returns "non_regex_string"
+		//////////////////////////////////////////////////////////////////////
+		string get_underlying_string() const {return non_regex_string;}
+
+		bool operator==(const Dfa& rhs) const {return non_regex_string == rhs.non_regex_string;}
+
 	private:
 		vector<char> possible_characters; 	///< Possible characters to use
 											///< in the regex
@@ -64,5 +72,14 @@ class Dfa {
 							///< of a traditional regex
 		string non_regex_string;	///< The constant string or regex being used
 };
+
+namespace std {
+	template<>
+	struct hash<Dfa> {
+		size_t operator()(const Dfa& regex) const {
+			return hash<string>()(regex.get_underlying_string());
+		}
+	};
+}
 
 #endif

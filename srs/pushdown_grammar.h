@@ -1,5 +1,5 @@
-#ifndef BINARY_MAP_GRAMMAR
-#define BINARY_MAP_GRAMMAR
+#ifndef PUSHDOWN_GRAMMAR
+#define PUSHDOWN_GRAMMAR
 
 #include <utility>
 #include <unordered_map>
@@ -17,45 +17,36 @@
 #include "grammar_probability.h"
 using namespace std;
 
-class Binary_map_grammar : public Base_grammar {
+class Pushdown_grammar : public Base_grammar {
 	public:
-		//////////////////////////////////////////////////////////////////////
-		/// @brief 	Default constructor. 
-		/// 		<ul> <li> Adds Binary_map_grammar::common_patterns to 
-		/// 		binary_to_regex_mapping </ul>
-		/// @post 	<ul> <li> fitness is set to -9999
-		/// 		<li> binary_to_regex_mapping contains the elements from 
-		/// 		common_patterns
-		///			<li> next_available_mapping is set to common_patterns.size()
-		//////////////////////////////////////////////////////////////////////
-		Binary_map_grammar();
-
 		//////////////////////////////////////////////////////////////////////
 		/// @brief 	Constructor for a single of string.
 		/// 		<ul> <li> Adds Binary_map_grammar::common_patterns to 
 		/// 		binary_to_regex_mapping. 
-		/// 		<li> Turns each string into a grammar rule consisting of 
-		/// 		A -> 'c'B where A anb B are non-terminals and 'c' is a 
+		/// 		<li> Turns each character into a state consisting of 
+		/// 		A -> 'c'B where A anb B are states and 'c' is a 
 		/// 		single character from the input. B will contain the 
-		/// 		following character in the input. </ul>
+		/// 		following character in the input. Stack read and writes 
+		/// 		will be lambda </ul>
 		/// @post	<ul> <li> fitness is set to -9999
 		/// 		<li> binary_to_regex_mapping contains the elements from 
 		/// 			common_patterns
-		/// 		<li> next_available_mapping is set appropriately
 		/// 		<li> grammar is populated </ul>
 		/// @param[in] 	input 	Input string to initialize the grammar rules with
 		//////////////////////////////////////////////////////////////////////
-		Binary_map_grammar(const string& input);
-		
+		Pushdown_grammar(const string& input);
+
 		//////////////////////////////////////////////////////////////////////
 		/// @brief 	Constructor for a vector of strings.
 		/// 		<ul> <li> Adds Binary_map_grammar::common_patterns to 
 		/// 		binary_to_regex_mapping. 
-		/// 		<li> Turns each string into a grammar rule consisting of 
-		/// 		A -> 'c'B where A anb B are non-terminals and 'c' is a 
+		/// 		<li> Turns each character into a state consisting of 
+		/// 		A -> 'c'B where A anb B are states and 'c' is a 
 		/// 		single character from the input. B will contain the 
-		/// 		following character in the input. 
+		/// 		following character in the input. Stack read and writes 
+		/// 		will be lambda </ul> 
 		/// 		<li> Each new string restarts as a possible start symbol.
+		/// 		This causes the automata to be non-deterministic
 		///			</ul>
 		/// @post	<ul> <li> fitness is set to -9999
 		/// 		<li> binary_to_regex_mapping contains the elements from 
@@ -65,11 +56,27 @@ class Binary_map_grammar : public Base_grammar {
 		/// @param[in] 	input 	Input strings to initialize the grammar 
 		/// 					rules with
 		//////////////////////////////////////////////////////////////////////
-		Binary_map_grammar(const vector<string>& inputs);
+		Pushdown_grammar(const vector<string>& inputs);
 
 		virtual shared_ptr<Base_grammar> clone() const;
 
 		virtual unordered_set<string> generate_strings();
+
+		//////////////////////////////////////////////////////////////////////
+		/// @brief 	Recursively generates a single string using the grammar
+		/// 		Once depth reaches max_string_depth, an epsilon will be 
+		/// 		returned instead of using possible rules. Due to depth limit
+		/// 		the generated string my not be from the grammar.
+		/// @param[in]	word 	Word that is being added to.
+		/// @param[in]	depth 	The current recursive depth
+		/// @param[in]	non_terminal 	The non-terminal associated with the
+		/// 		list of possible production rules.
+		//////////////////////////////////////////////////////////////////////
+		void generate_string(string& word, const int depth, const uint32_t non_terminal);
+};
+
+class Binary_map_grammar : public Base_grammar {
+	public:
 
 		//////////////////////////////////////////////////////////////////////
 		/// @brief 	Recursively generates a single string using the grammar

@@ -18,11 +18,27 @@ using namespace std;
 
 shared_ptr<Base_grammar> a_star_b_star() {
 	string s = "";
-	///*
+	
 	for(int i = 1; i < rand() % 100; i++) {
 		s += "a";
 	}
 	for(int i = 1; i < rand() % 100; i++) {
+		s += "b";
+	}
+
+	shared_ptr<Base_grammar> temp(new Binary_map_grammar(s));
+
+	return temp;
+}
+
+shared_ptr<Base_grammar> a_n_b_n() {
+	string s = "";
+	int number = rand() % 100;
+
+	for(int i = 0; i < number; i++) {
+		s += "a";
+	}
+	for(int i = 0; i < number; i++) {
 		s += "b";
 	}
 
@@ -68,7 +84,7 @@ int main(int argc, char *argv[]) {
 	//shared_ptr<Base_grammar> apple(new Binary_map_grammar());
 	//shared_ptr<Base_grammar> ban(new decltype(*apple)());
 
-	Ea ea(a_star_b_star, argv[1]);
+	Ea ea(a_n_b_n, argv[1]);
 
 	ea.run();
 

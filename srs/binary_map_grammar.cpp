@@ -2,6 +2,7 @@
 
 unordered_map<char, uint32_t> Binary_map_grammar::char_to_binary_mapping;
 unordered_map<uint32_t, Dfa> Binary_map_grammar::binary_to_regex_mapping;
+unordered_map<Dfa, uint32_t> Binary_map_grammar::regex_to_binary_mapping; 
 uint32_t Binary_map_grammar::next_available_mapping = 1;
 const uint32_t Binary_map_grammar::start_symbol = 0;
 int Binary_map_grammar::max_string_depth = 100;
@@ -270,7 +271,7 @@ float Binary_map_grammar::find_fitness() {
 		count += 10.0;
 	}
 
-	fitness -= count;
+	fitness -= (count / 2);
 
 	// --- Favor diverse languages --- //
 	unordered_set<uint32_t> diverse;
@@ -284,7 +285,8 @@ float Binary_map_grammar::find_fitness() {
 		}
 	}
 	// NOTE: change
-	fitness *= (1 + (diverse.size()));
+	fitness += (100 * diverse.size());
+	//fitness *= (1 + (diverse.size()));
 
 	return fitness;
 }
@@ -299,7 +301,7 @@ float Binary_map_grammar::get_fitness() {
 
 void Binary_map_grammar::mutate() {
 	// Delete random rule
-	if(success()) {
+	if(success() && success()) {
 		delete_random_rule_from_grammar();
 	}
 
@@ -326,7 +328,7 @@ void Binary_map_grammar::mutate() {
 			}
 
 			// Delete single symbol in each rule with success() probability
-			if(success()) {
+			if(success() && success()) {
 				delete_random_symbol(rule);
 			}
 		}

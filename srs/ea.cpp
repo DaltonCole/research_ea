@@ -1,12 +1,17 @@
 #include "ea.h"
 
 /* --- TASKS --- //
+* Find related parts of the string by aplying "edit distance"?
+	* Help guild the EA with parts
+	* Might initalize some individuals with knowledge of the individual parts
+
 * Fix
 	* Multiple entries in DFA map can contain the same regex or string
 		* Fix this by keeping track of an unordered_set
 			* Could make this static and have it return a uint32_t if it already exists
 			or a new uint32_t if it does not exist yet
 
+* Add mutation rule that adds a rule-set/non-terminal
 
 * Fix start symbol problem
 	* Forgot what it was

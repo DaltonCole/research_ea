@@ -7,7 +7,7 @@
 Kcov: false
 
 # Executable
-Executable: /home/drc/Desktop/Research/ea/tester_parser/parser
+Executable: /home/drc/Desktop/Research/ea/tester_parser/a_n_b_n_parser
 
 # Sample file directory
 #Sample file directory: /home/drc/Desktop/Research/ea/tester_parser/samples/

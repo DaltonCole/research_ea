@@ -66,7 +66,7 @@ shared_ptr<Base_grammar> xml_like() {
 
 int main(int argc, char *argv[]) {
 	if(argc != 2) {
-		cout << "NOPE!" << endl;
+		cout << "Usage: ./ea <config file>" << endl;
 		return 0;
 	}
 

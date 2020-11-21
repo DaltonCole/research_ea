@@ -1,4 +1,4 @@
-#include "pushdown_automata.h"
+include "pushdown_automata.h"
 
 uint Pushdown_automata::max_failed_attempts = 100;
 
